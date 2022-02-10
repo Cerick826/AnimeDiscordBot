@@ -1,11 +1,11 @@
 # CPSC362-Group-Project
 
 ## GROUP MEMBERS:
-*Vong Chen 
-*Erick Contreras
-*Nurhaliza Hassan
-*Corey New
-*William Ye
+* Vong Chen 
+* Erick Contreras
+* Nurhaliza Hassan
+* Corey New
+* William Ye
 
 ## INTRODUCTION
 What is the project (non-technical description)?
