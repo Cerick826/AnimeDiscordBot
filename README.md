@@ -1,13 +1,13 @@
 # CPSC362-Group-Project
 
-# GROUP MEMBERS:
-Vong Chen 
-Erick Contreras
-Nurhaliza Hassan
-Corey New
-William Ye
+## GROUP MEMBERS:
+*Vong Chen 
+*Erick Contreras
+*Nurhaliza Hassan
+*Corey New
+*William Ye
 
-# INTRODUCTION
+## INTRODUCTION
 What is the project (non-technical description)?
 As to appeal to anime enthusiasts, the objective of this project is to create a Discord bot that provides anime-based utilities such as tracking and recommending show lists and displaying top current shows. 
 
@@ -36,6 +36,10 @@ Create list of commands for the user (display with -help)
 Database - SQL & PHP
 Will contain list of animes
 Store user data from queries
+
+Server for cloud hosting, and constant bot uptime
+[Server](http://aws.amazon.com/free/)
+
 
 
 
