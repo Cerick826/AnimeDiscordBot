@@ -44,14 +44,4 @@ async def help(context):
     await context.send("help command - this is a test")
     
     
-        
-        
-
-        
-
-
-    
-
-    
-
 client.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
