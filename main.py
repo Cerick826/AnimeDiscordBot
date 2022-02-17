@@ -3,7 +3,8 @@ from discord.ext import commands
 import mysql.connector
 
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix= '!', help_command=None)
+bot.remove_command('help')
 conn = mysql.connector.connect(host='localhost', port=3306, user='root', passwd='root', database='animebot')
 cur = conn.cursor()
 
@@ -50,6 +51,8 @@ async def on_message(message):
             await bot.change_presence(status=discord.Status.online)
             botON = True
     await bot.process_commands(message)
+    
+# COMMANDS
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg):
@@ -108,15 +111,16 @@ async def delAnime(ctx, *, arg):
     conn.commit()
     await ctx.send(arg + " deleted from anime list!")
 
-        
-
-
-
-
-
-
-
-
-
-
+@bot.command()
+async def help(context):
+    #await context.send("help command - this is a test")
+    embed = discord.Embed(
+        title = '**Help Menu**',
+        description = 'Use any of the following commands:',
+        color = discord.Color.blue()
+    )
+    embed.add_field(name='Commands:',value=' `createList`, `showList`, `topAnime`, `recommend`, `.......`')
+    embed.add_field(name='Settings:',value='`.......`', inline = False)
+    await context.send(embed=embed)
+    
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
