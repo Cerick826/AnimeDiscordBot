@@ -3,7 +3,7 @@ from discord.ext import commands
 import mysql.connector
 
 
-bot = commands.Bot(command_prefix= '!', help_command=None)
+bot = commands.Bot(command_prefix='!', help_command=None)
 bot.remove_command('help')
 conn = mysql.connector.connect(host='localhost', port=3306, user='root', passwd='root', database='animebot')
 cur = conn.cursor()
