@@ -50,6 +50,6 @@ async def help(context):
     embed.add_field(name='Commands:',value=' `createList`, `showList`, `topAnime`, `recommend`, `.......`')
     embed.add_field(name='Settings:',value='`.......`', inline = False)
     await context.send(embed=embed)
-    
-    
+
+
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
