@@ -1,43 +1,116 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
+import mysql.connector
 
-#client = discord.Client()
 
 bot = commands.Bot(command_prefix= '!', help_command=None)
 bot.remove_command('help')
+conn = mysql.connector.connect(host='localhost', port=3306, user='root', passwd='root', database='animebot')
+cur = conn.cursor()
 
-# @client.event
-# async def on_ready():
-#    print('We have logged in as {0.user}'.format(client))
-#     global botON
-#     botON = True
+@bot.event
+async def on_ready():
+    print('Bot is ready and Online')
+    global botON
+    botON = True
 
 
-# @client.event
-# async def on_message(message):
-#     global botON
+@bot.event
+async def on_message(message):
+    global botON
+    author_id = str(message.author.id)
 
-#     # making sure bot does not respond to itself
-#     if message.author == client.user:
-#             return
+    if message.author.bot:
+            return
+    if (botON):
+        if message.content.startswith('!hi'):
+            await message.channel.send('hello!')
 
-#     if (botON):
-#         if message.content.startswith('!hi'):
-#             await message.channel.send('hello!')
-        
-#         if message.content.startswith('!leave'):
-#             await message.channel.send('I am leaving!')
-#             await client.change_presence(status=discord.Status.invisible)
-             
-#             botON = False
+        if message.content.startswith('!createList'):
+            cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+            find_id = cur.fetchall()
 
-#     if not(botON):
-#         if(message.content.startswith('!join')):
-#             await message.channel.send('I am back!')
-#             await client.change_presence(status=discord.Status.online)
-#             botON = True
+            if find_id == author_id:
+                pass
+            else:
+                sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
+                valadd = (author_id, " ")
+                cur.execute(sqladd, valadd)
+                conn.commit()
 
-#Commands
+
+        if message.content.startswith('!leave'):
+            await message.channel.send('I am leaving!')
+            await bot.change_presence(status=discord.Status.invisible)
+
+            botON = False
+
+    if not(botON):
+        if(message.content.startswith('!join')):
+            await message.channel.send('I am back!')
+            await bot.change_presence(status=discord.Status.online)
+            botON = True
+    await bot.process_commands(message)
+    
+# COMMANDS
+
+@bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
+async def saveList(ctx, *, arg):
+    sp_chars = ['(', ')', '\'', ',']
+    sp_chars2 = ['(', ')', '\'']
+    my_id = str(ctx.message.author.id)
+    cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
+    result = cur.fetchall()
+    mylist = " ".join(map(str, result))
+    print(mylist)
+    if len(mylist) == 5:
+        for i in sp_chars:
+            mylist = mylist.replace(i, "")
+        mylist += str(arg)
+    else:
+        mylist = mylist[:-2] + mylist[-1:]
+        for i in sp_chars2:
+            mylist = mylist.replace(i, "")
+        mylist += ", " + str(arg)
+    print(mylist)
+    cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+    conn.commit()
+    await ctx.send(arg + " saved to list")
+
+@bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
+async def showList(ctx):
+    sp_chars2 = ['(', ')', '\'']
+    my_id = str(ctx.message.author.id)
+    cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
+    result = cur.fetchall()
+    mylist = " ".join(map(str, result))
+    if len(mylist) == 5:
+        await ctx.send("The list is empty!")
+    else:
+        mylist = mylist[:-2] + mylist[-1:]
+        for i in sp_chars2:
+            mylist = mylist.replace(i, "")
+        await ctx.send(mylist)
+
+@bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
+async def delAnime(ctx, *, arg):
+    sp_chars2 = ['(', ')', '\'', arg]
+    my_id = str(ctx.message.author.id)
+    cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
+    result = cur.fetchall()
+    mylist = " ".join(map(str, result))
+    if len(mylist) == 5:
+        await ctx.send("The list is empty!")
+    else:
+        mylist = mylist[:-2] + mylist[-1:]
+        for i in sp_chars2:
+            mylist = mylist.replace(i, "")
+        if mylist[-2] == ",":
+            mylist = mylist[:-2]
+        mylist = mylist.replace(", ,", ",")
+    cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+    conn.commit()
+    await ctx.send(arg + " deleted from anime list!")
 
 @bot.command()
 async def help(context):
@@ -50,6 +123,5 @@ async def help(context):
     embed.add_field(name='Commands:',value=' `createList`, `showList`, `topAnime`, `recommend`, `.......`')
     embed.add_field(name='Settings:',value='`.......`', inline = False)
     await context.send(embed=embed)
-    
     
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
