@@ -56,7 +56,6 @@ async def on_message(message):
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg):
-    sp_chars2 = ['(', '\'']
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -65,9 +64,7 @@ async def saveList(ctx, *, arg):
     if len(mylist) == 5:
         mylist = str(arg)
     else:
-        mylist = mylist[:-3]
-        for i in sp_chars2:
-            mylist = mylist.replace(i, "")
+        mylist = mylist[2:-3]
         mylist += ", " + str(arg)
     print(mylist)
     cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
@@ -76,40 +73,40 @@ async def saveList(ctx, *, arg):
 
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
 async def showList(ctx):
-    sp_chars2 = ['(', '\'']
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     if len(mylist) == 5:
+        print(mylist)
         await ctx.send("The list is empty!")
     else:
-        mylist = mylist[:-3]
-        for i in sp_chars2:
-            mylist = mylist.replace(i, "")
+        mylist = mylist[2:-3]
+        print(mylist)
         await ctx.send(mylist)
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
 async def delAnime(ctx, *, arg):
-    sp_chars2 = ['(', '\'', arg]
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     if len(mylist) == 5:
+        print(mylist)
         await ctx.send("The list is empty!")
     else:
-        mylist = mylist[:-3]
-        for i in sp_chars2:
-            mylist = mylist.replace(i, "")
-        if mylist[-2] == ",":
+        mylist = mylist[2:-3]
+        print(mylist)
+        mylist = mylist.replace(arg, "")
+        print(mylist[-2:-2])
+        if mylist[-2:-1] == ",":
             mylist = mylist[:-2]
-        if mylist[0] == ",":
+        if mylist[0:1] == ",":
             mylist = mylist[2:]
         mylist = mylist.replace(", ,", ",")
-    cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
-    conn.commit()
-    await ctx.send(arg + " deleted from anime list!")
+        cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+        conn.commit()
+        await ctx.send(arg + " deleted from anime list!")
 
 @bot.command()
 async def help(context):
