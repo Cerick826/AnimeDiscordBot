@@ -108,16 +108,17 @@ async def delAnime(ctx, *, arg):
         conn.commit()
         await ctx.send(arg + " deleted from anime list!")
 
-@bot.command()
-async def help(context):
-    #await context.send("help command - this is a test")
+@bot.command(name="help", aliases=["Help"], pass_context=True)
+async def help(ctx):
     embed = discord.Embed(
         title = '**Help Menu**',
         description = 'Use any of the following commands:',
         color = discord.Color.blue()
     )
-    embed.add_field(name='Commands:',value=' `createList`, `showList`, `topAnime`, `recommend`, `.......`')
-    embed.add_field(name='Settings:',value='`.......`', inline = False)
-    await context.send(embed=embed)
+    embed.set_footer(text=f'Requested by - {ctx.author}', icon_url = ctx.author.avatar_url)
+    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `.......`')
+    embed.add_field(name='Details:',value='`commandDetails`', inline = False)
+    await ctx.send(embed=embed)
+    
     
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
