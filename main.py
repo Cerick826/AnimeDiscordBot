@@ -5,7 +5,7 @@ import mysql.connector
 
 bot = commands.Bot(command_prefix='!', help_command=None)
 bot.remove_command('help')
-conn = mysql.connector.connect(host='localhost', port=3306, user='root', passwd='root', database='animebot')
+conn = mysql.connector.connect(host='sql3.freesqldatabase.com', port=3306, user='sql3474170', passwd='jmkGZaymNS', database='sql3474170')
 cur = conn.cursor()
 
 @bot.event
@@ -18,25 +18,12 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     global botON
-    author_id = str(message.author.id)
 
     if message.author.bot:
             return
     if (botON):
         if message.content.startswith('!hi'):
             await message.channel.send('hello!')
-
-        if message.content.startswith('!createList'):
-            cur.execute(f"select user_id from watchlist where user_id = {author_id}")
-            find_id = cur.fetchall()
-
-            if find_id == author_id:
-                pass
-            else:
-                sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
-                valadd = (author_id, " ")
-                cur.execute(sqladd, valadd)
-                conn.commit()
 
 
         if message.content.startswith('!leave'):
@@ -107,6 +94,45 @@ async def delAnime(ctx, *, arg):
         cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
         conn.commit()
         await ctx.send(arg + " deleted from anime list!")
+
+@bot.command(name="createList", aliases=["Createlist", "CreateList", "createlist"], pass_context=True)
+async def createList(ctx):
+    author_id = str(ctx.message.author.id)
+    cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+    find_id = cur.fetchall()
+
+    if len(find_id) != 0:
+        await ctx.send("You already have a list saved!")
+        pass
+    else:
+        sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
+        valadd = (author_id, " ")
+        cur.execute(sqladd, valadd)
+        await ctx.send("New watch list created!")
+        conn.commit()
+
+@bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
+async def deleteList(ctx):
+    author_id = str(ctx.message.author.id)
+    cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+    find_id = cur.fetchall()
+    if len(find_id) != 0:
+        cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {author_id}")
+        result = cur.fetchall()
+        mylist = " ".join(map(str, result))
+        if len(mylist) == 5:
+            await ctx.send("List is empty")
+            pass
+        else:
+            cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
+            conn.commit()
+            await ctx.send("List deleted!")
+    else:
+        await ctx.send("You don't have any list saved!")
+
+@bot.command()
+async def help(context):
+    #await context.send("help command - this is a test")
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
 async def help(ctx):
