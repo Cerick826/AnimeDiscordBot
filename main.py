@@ -52,7 +52,7 @@ async def saveList(ctx, *, arg = None):
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     print(mylist)
-    if len(mylist) == 5 or len(mylist) == 6:
+    if len(mylist) == 5:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
