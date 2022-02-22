@@ -130,9 +130,6 @@ async def deleteList(ctx):
     else:
         await ctx.send("You don't have any list saved!")
 
-@bot.command()
-async def help(context):
-    #await context.send("help command - this is a test")
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
 async def help(ctx):
