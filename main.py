@@ -48,7 +48,7 @@ async def saveList(ctx, *, arg):
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     print(mylist)
-    if len(mylist) == 5 or len(mylist) == 6:
+    if len(mylist) == 5:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
@@ -130,9 +130,6 @@ async def deleteList(ctx):
     else:
         await ctx.send("You don't have any list saved!")
 
-@bot.command()
-async def help(context):
-    #await context.send("help command - this is a test")
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
 async def help(ctx):
