@@ -48,7 +48,9 @@ async def saveList(ctx, *, arg):
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     print(mylist)
-    if len(mylist) == 5:
+    if mylist[2:2] == " " and len(mylist) == 6:
+        check = True
+    if len(mylist) == 5 or check:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
