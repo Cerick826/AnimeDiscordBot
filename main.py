@@ -1,5 +1,7 @@
 import discord
+from discord_ui import Button
 from discord.ext import commands
+from django.views import View
 import mysql.connector
 
 
@@ -39,21 +41,26 @@ async def on_message(message):
             botON = True
     await bot.process_commands(message)
     
-@bot.event
-async def showReminder():
-    channel = bot.get_channel()
-    await channel.send("show 1 - ep: blah blah")
-   # await channel.send("show 2 - ep: blah blah blah")
-    
-@showReminder.before_loop
-async def showReminder():
-    for  in range(60*60*168): # loop per week
-        if dt.datetime.now().hour == 10+12: # 24 hour format
-            print("NOTIFICATION - Here are the newly posted episodes for the week!")
-            return # may need to reference database here
-        await asyncio.sleep(1) # allows for a moment break before looping once more
         
 # COMMANDS
+@bot.command(pass_context=True)
+async def menu(ctx):
+    helpButton = Button(label= "Help", style=discord.ButtonStyle.white, emoji=":zero:")
+    createListButton = Button(label="Create List", style=discord.ButtonStyle.white, emoji=":one:")
+    saveListButton = Button(label="Save List", style=discord.ButtonStyle.white, emoji=":two:")
+    showListButton = Button(label="Show List", style=discord.ButtonStyle.white, emoji=":three:")
+    delAnimeButton = Button(label="Delete Anime", style=discord.ButtonStyle.white, emoji=":four:")
+    delListButton = Button(label="Delete List", style=discord.ButtonStyle.white, emoji=":five:")    
+    
+    view = View()
+    view.add_item(helpButton)
+    view.add_item(createListButton)
+    view.add_item(saveListButton)
+    view.add_item(showListButton)
+    view.add_item(delAnimeButton)
+    view.add_item(delListButton)
+    await ctx.send("Menu", veiw=view)
+    
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg = None):
