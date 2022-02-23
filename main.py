@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import mysql.connector
 
-
 bot = commands.Bot(command_prefix='!', help_command=None)
 bot.remove_command('help')
 conn = mysql.connector.connect(host='sql3.freesqldatabase.com', port=3306, user='sql3474170', passwd='jmkGZaymNS', database='sql3474170')
@@ -52,9 +51,7 @@ async def saveList(ctx, *, arg = None):
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     print(mylist)
-    if mylist[2:2] == " " and len(mylist) == 6:
-        check = True
-    if len(mylist) == 5 or check:
+    if len(mylist) == 5 or len(mylist) == 6:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
