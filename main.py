@@ -1,6 +1,9 @@
 import discord
-from discord_ui import Button
+#from discord import Color
+from discord import Embed
 from discord.ext import commands
+#from discord_components import DiscordComponents
+from discord_ui import Button
 from django.views import View
 import mysql.connector
 
@@ -43,14 +46,21 @@ async def on_message(message):
     
         
 # COMMANDS
-@bot.command(pass_context=True)
-async def menu(ctx):
-    helpButton = Button(label= "Help", style=discord.ButtonStyle.white, emoji=":zero:")
-    createListButton = Button(label="Create List", style=discord.ButtonStyle.white, emoji=":one:")
-    saveListButton = Button(label="Save List", style=discord.ButtonStyle.white, emoji=":two:")
-    showListButton = Button(label="Show List", style=discord.ButtonStyle.white, emoji=":three:")
-    delAnimeButton = Button(label="Delete Anime", style=discord.ButtonStyle.white, emoji=":four:")
-    delListButton = Button(label="Delete List", style=discord.ButtonStyle.white, emoji=":five:")    
+@bot.command(name = "menu")
+async def menu(self,ctx):
+    '''
+    components =[
+    Button(label= "Help", style=ButtonSt, emoji=":zero:", custom_id="button0")
+    
+    ]
+    '''
+    '''
+    helpButton = Button(label= "Help", style=discord.ButtonStyle.dark_magenta, emoji=":zero:")
+    createListButton = Button(label="Create List", style=discord.ButtonStyle.dark_magenta, emoji=":one:")
+    saveListButton = Button(label="Save List", style=discord.Color.dark_magenta, emoji=":two:")
+    showListButton = Button(label="Show List", style=discord.Color.dark_magenta, emoji=":three:")
+    delAnimeButton = Button(label="Delete Anime", style=discord.Color.dark_magenta, emoji=":four:")
+    delListButton = Button(label="Delete List", style=discord.Color.dark_magenta, emoji=":five:")    
     
     view = View()
     view.add_item(helpButton)
@@ -59,8 +69,8 @@ async def menu(ctx):
     view.add_item(showListButton)
     view.add_item(delAnimeButton)
     view.add_item(delListButton)
-    await ctx.send("Menu", veiw=view)
-    
+    await ctx.send("Menu", view=view)
+    '''
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg = None):
@@ -90,10 +100,25 @@ async def showList(ctx):
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
     if len(mylist) == 5:
+        for i in range(0, len(mylist)):
+            for j in range(0, len(mylist)):
+                if mylist[j] > mylist[i]:
+                    temp = mylist[i]
+                    mylist[i] = mylist[j]
+                    mylist[j] = temp
+        #print(sorted(mylist, key=str.lower))
         print(mylist)
         await ctx.send("The list is empty!")
     else:
         mylist = mylist[2:-3]
+        #print(sorted(mylist, key=str.lower))
+        for i in range(0, len(mylist)):
+            for j in range(0, len(mylist)):
+                if mylist[j] > mylist[i]:
+                    temp = mylist[i]
+                    mylist[i] = mylist[j]
+                    mylist[j] = temp
+        #print(sorted(mylist, key=str.lower))
         print(mylist)
         await ctx.send(mylist)
 
