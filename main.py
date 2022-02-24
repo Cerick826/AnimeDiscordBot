@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import mysql.connector
 
-
 bot = commands.Bot(command_prefix='!', help_command=None)
 bot.remove_command('help')
 conn = mysql.connector.connect(host='sql3.freesqldatabase.com', port=3306, user='sql3474170', passwd='jmkGZaymNS', database='sql3474170')
@@ -38,7 +37,7 @@ async def on_message(message):
             await bot.change_presence(status=discord.Status.online)
             botON = True
     await bot.process_commands(message)
-
+    
 # COMMANDS
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
@@ -48,7 +47,8 @@ async def saveList(ctx, *, arg):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
-    if len(mylist) == 5:
+    print(mylist)
+    if len(mylist) == 5 or len(mylist) == 6:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
@@ -60,19 +60,24 @@ async def saveList(ctx, *, arg):
 
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
 async def showList(ctx):
-
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
-    
-    mylist = mylist[2:-3]
-    print(mylist)
-    await ctx.send(mylist)
+    if len(result) == 0:
+        raise Exception()
+    if len(mylist) == 5:
+        print(mylist)
+        raise Exception()
+        await ctx.send("The list is empty!")
+    else:                                             
+        mylist = mylist[2:-3]
+        print(mylist)
+        await ctx.send(mylist)
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
 async def delAnime(ctx, *, arg):
-
+    
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -110,6 +115,33 @@ async def createList(ctx):
         await ctx.send("New watch list created!")
         conn.commit()
 
+#Exception Handling
+
+@bot.check
+def check_command(ctx):
+    return ctx.command.qualified_name
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandInvokeError):
+        if check_command(ctx) == "showList":
+            await ctx.send("> You don't have a list saved!" + '\n' +
+                            "> Use `!createList` to start a list" + '\n')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        if check_command(ctx) == "saveList":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!savelist <anime title>` to save an anime to your list" + '\n')
+        if check_command(ctx) == "delAnime":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("> Command not found!" + '\n' +
+                        "> Use `!help` for list of commands" + '\n' +
+                        "> Use `!help <command name>` for specific command details")  
+    else:
+        raise error
+
+
 @bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
 async def deleteList(ctx):
     author_id = str(ctx.message.author.id)
@@ -122,13 +154,12 @@ async def deleteList(ctx):
         if len(mylist) == 5:
             await ctx.send("List is empty")
             pass
-        else: 
+        else:
             cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
             conn.commit()
             await ctx.send("List deleted!")
     else:
-        await ctx.send("> You don't have a list saved!" + '\n' +
-                        "> Use `!savelist <anime title>` to start a list")
+        await ctx.send("You don't have any list saved!")
 
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
@@ -202,42 +233,16 @@ async def help(ctx, *, arg = None):
         embeddeleteList.add_field(name='Usage:',value='`!deleteList`', inline = False)
         await ctx.send(embed=embeddeleteList)
         return
-    else:
-        embed = discord.Embed(
-            title = '**Help Menu**',
-            description = 'Use any of the following commands:',
-            color = discord.Color.blue()
-        )
-        embed.set_footer(text=f'Requested by - {ctx.author}', icon_url = ctx.author.avatar_url)
-        embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `.......`')
-        embed.add_field(name='Details:',value='`commandDetails`', inline = False)
-        await ctx.send(embed=embed)
 
-#Exception Handling
-
-@bot.check
-def check_command(ctx):
-    return ctx.command.qualified_name
-
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandInvokeError):
-        if check_command(ctx) == "showList":
-            await ctx.send("> Your list is empty!" + '\n' +
-                            "> Use `!savelist <anime title>` to start a list" + '\n')
-    elif isinstance(error, commands.MissingRequiredArgument):
-        if check_command(ctx) == "saveList":
-            await ctx.send("> Incorrect Usage!" + '\n' +
-                            "> Use `!savelist <anime title>` to save an anime to your list" + '\n')
-        if check_command(ctx) == "delAnime":
-            await ctx.send("> Incorrect Usage!" + '\n' +
-                            "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
-    elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("> Command not found!" + '\n' +
-                        "> Use `!help` for list of commands" + '\n' +
-                        "> Use `!help <command name>` for specific command details")
-    else:
-        raise error
-     
-
+    embed = discord.Embed(
+        title = '**Help Menu**',
+        description = 'Use any of the following commands:',
+        color = discord.Color.blue()
+    )
+    embed.set_footer(text=f'Requested by - {ctx.author}', icon_url = ctx.author.avatar_url)
+    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `.......`')
+    embed.add_field(name='Details:',value='`commandDetails`', inline = False)
+    await ctx.send(embed=embed)
+    
+    
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
