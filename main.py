@@ -244,4 +244,5 @@ async def help(ctx, *, arg = None):
     embed.add_field(name='Details:',value='`commandDetails`', inline = False)
     await ctx.send(embed=embed)
     
+bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
     
