@@ -122,3 +122,5 @@ async def help(ctx):
     
     
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
+
+#
