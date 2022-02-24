@@ -1,9 +1,9 @@
 import discord
-#from discord import Color
+from discord import Color
 from discord import Embed
 from discord.ext import commands
-#from discord_components import DiscordComponents
-from discord_ui import Button
+from discord_components import *
+#from discord_ui import Button
 from django.views import View
 import mysql.connector
 
@@ -47,20 +47,22 @@ async def on_message(message):
         
 # COMMANDS
 @bot.command(name = "menu")
-async def menu(self,ctx):
+async def menu(ctx):
     '''
-    components =[
-    Button(label= "Help", style=ButtonSt, emoji=":zero:", custom_id="button0")
-    
-    ]
+    await ctx.send("Menu", components =[
+        [Button(label= "Help", style="0", emoji=":zero:", custom_id="button0")],
+        [Button(label= "Create List", style="1", emoji=":one:", custom_id="button1")]
+        ])
+    interaction = await bot.wait_for("button click", check = lambda i: i.custom_id=="button0")
+    await interaction.send(content = "button clicked", ephemeral = True)
     '''
     '''
-    helpButton = Button(label= "Help", style=discord.ButtonStyle.dark_magenta, emoji=":zero:")
-    createListButton = Button(label="Create List", style=discord.ButtonStyle.dark_magenta, emoji=":one:")
-    saveListButton = Button(label="Save List", style=discord.Color.dark_magenta, emoji=":two:")
-    showListButton = Button(label="Show List", style=discord.Color.dark_magenta, emoji=":three:")
-    delAnimeButton = Button(label="Delete Anime", style=discord.Color.dark_magenta, emoji=":four:")
-    delListButton = Button(label="Delete List", style=discord.Color.dark_magenta, emoji=":five:")    
+    helpButton = Button(label= "Help", style=discord.ButtonStyle.red, emoji=":zero:")
+    createListButton = Button(label="Create List", style=discord.ButtonStyle.grey, emoji=":one:")
+    saveListButton = Button(label="Save List", style=discord.ButtonStyle.blurple, emoji=":two:")
+    showListButton = Button(label="Show List", style=discord.ButtonStyle.green, emoji=":three:")
+    delAnimeButton = Button(label="Delete Anime", style=discord.ButtonStyle.red, emoji=":four:")
+    delListButton = Button(label="Delete List", style=discord.ButtonStyle.blurple, emoji=":five:")    
     
     view = View()
     view.add_item(helpButton)
@@ -71,6 +73,17 @@ async def menu(self,ctx):
     view.add_item(delListButton)
     await ctx.send("Menu", view=view)
     '''
+    await ctx.send("Menu", components = [
+        [Button(label="Help", style="3", emoji = "0️⃣", custom_id="button0"), 
+         Button(label="Create List", style="3", emoji = "1️⃣", custom_id="button1"),
+         Button(label="Save List", style="3", emoji = "2️⃣", custom_id="button2"),
+         Button(label="Show List", style="3", emoji = "3️⃣", custom_id="button3"),
+         Button(label="Delete Anime", style="3", emoji = "4️⃣", custom_id="button4")
+        # Button(label="Delete List", style="3", emoji = "5️⃣", custom_id="button5")
+        ]
+            ])
+    interaction = await bot.wait_for("button_click", check = lambda i: i.custom_id == "button0")
+    await interaction.send(content = "Button clicked!", ephemeral=False)
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg = None):
@@ -98,26 +111,32 @@ async def showList(ctx):
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
-    mylist = " ".join(map(str, result))
-    if len(mylist) == 5:
-        for i in range(0, len(mylist)):
-            for j in range(0, len(mylist)):
-                if mylist[j] > mylist[i]:
-                    temp = mylist[i]
-                    mylist[i] = mylist[j]
-                    mylist[j] = temp
+    # put sort function here
+    
+    #test = result
+    #words = [word.lower() for word in result.split()]
+    #words.sort()
+    #test1 = test.split(",")
+    '''
+    for a in range(0, len(test)):
+        for b in range(0, len(test)):
+            if test[b] > test[a]:
+                temp = test[a]
+                test[a] = test[b]
+                test[b] = temp
+    '''
+    
+    #test1 = test.split(',')
+    #result.sort()
+    # string to list -> sort + separated by commas
+    mylist = " ".join(map(str,result))
+    #test = " ".sorted(mylist)
         #print(sorted(mylist, key=str.lower))
-        print(mylist)
+    if len(mylist) == 5:
+        print(mylist)  
         await ctx.send("The list is empty!")
     else:
         mylist = mylist[2:-3]
-        #print(sorted(mylist, key=str.lower))
-        for i in range(0, len(mylist)):
-            for j in range(0, len(mylist)):
-                if mylist[j] > mylist[i]:
-                    temp = mylist[i]
-                    mylist[i] = mylist[j]
-                    mylist[j] = temp
         #print(sorted(mylist, key=str.lower))
         print(mylist)
         await ctx.send(mylist)
