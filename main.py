@@ -75,8 +75,8 @@ async def saveList(ctx, *, arg):
     await ctx.send(arg + " saved to list")
 
 async def sortWatchList(wString):
-    delim = ","
-    result = delim.join(sorted(wString.split(",")))
+    delim = ", "
+    result = delim.join(sorted(wString.split(", ")))
     return result
 
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
@@ -273,8 +273,8 @@ async def help(ctx, *, arg = None):
         color = discord.Color.blue()
     )
     embed.set_footer(text=f'Requested by - {ctx.author}', icon_url = ctx.author.avatar_url)
-    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `.......`')
-    embed.add_field(name='Details:',value='`commandDetails`', inline = False)
+    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `clearList`')
+    embed.add_field(name='Details:',value='`!help <command>`', inline = False)
     await ctx.send(embed=embed)
     
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
