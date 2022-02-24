@@ -1,5 +1,8 @@
 import discord
+from discord import Embed
 from discord.ext import commands
+from discord_components import *
+from operator import truediv
 import mysql.connector
 
 bot = commands.Bot(command_prefix='!', help_command=None)
@@ -39,7 +42,20 @@ async def on_message(message):
     await bot.process_commands(message)
     
 # COMMANDS
-
+@bot.command(name = "menu", aliases=["Menu"])
+async def menu(ctx):
+    await ctx.send("Menu", components = [
+        [Button(label="Help", style="2", emoji = "0️⃣", custom_id="button0"), 
+         Button(label="Create List", style="2", emoji = "1️⃣", custom_id="button1"),
+         Button(label="Save List", style="2", emoji = "2️⃣", custom_id="button2"),
+         Button(label="Show List", style="2", emoji = "3️⃣", custom_id="button3"),
+         Button(label="Delete Anime", style="2", emoji = "4️⃣", custom_id="button4")
+        # Button(label="Delete List", style="3", emoji = "5️⃣", custom_id="button5")
+        ]
+            ])
+    interaction = await bot.wait_for("button_click", check = lambda i: i.custom_id == "button0")
+    await interaction.send(content = "Button clicked!", ephemeral=False)
+    
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
 async def saveList(ctx, *, arg):
     
@@ -58,6 +74,11 @@ async def saveList(ctx, *, arg):
     conn.commit()
     await ctx.send(arg + " saved to list")
 
+async def sortWatchList(wString):
+    delim = ","
+    result = delim.join(sorted(wString.split(",")))
+    return result
+
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
 async def showList(ctx):
     my_id = str(ctx.message.author.id)
@@ -72,6 +93,7 @@ async def showList(ctx):
         await ctx.send("The list is empty!")
     else:                                             
         mylist = mylist[2:-3]
+        mylist = await sortWatchList(mylist)
         print(mylist)
         await ctx.send(mylist)
 
@@ -142,8 +164,8 @@ async def on_command_error(ctx, error):
         raise error
 
 
-@bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
-async def deleteList(ctx):
+@bot.command(name="clearList", aliases=["Clearlist", "ClearList", "clearlist"], pass_context=True)
+async def clearList(ctx):
     author_id = str(ctx.message.author.id)
     cur.execute(f"select user_id from watchlist where user_id = {author_id}")
     find_id = cur.fetchall()
@@ -157,9 +179,20 @@ async def deleteList(ctx):
         else:
             cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
             conn.commit()
-            await ctx.send("List deleted!")
+            await ctx.send("List cleared!")
     else:
         await ctx.send("You don't have any list saved!")
+
+@bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
+async def deleteList(ctx):
+    author_id = str(ctx.message.author.id)
+    cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+    find_id = cur.fetchall()
+    if len(find_id) != 0:
+        cur.execute(f"DELETE FROM watchlist where user_id = {author_id}")
+        await ctx.send("List deleted!")
+    else:
+        await ctx.send("You don't have a list baka!")
 
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
