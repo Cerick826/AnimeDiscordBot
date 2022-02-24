@@ -41,11 +41,8 @@ async def on_message(message):
 # COMMANDS
 
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
-async def saveList(ctx, *, arg = None):
-    if(arg == None):
-        await ctx.send("Incorrect Usage: !saveList <anime name>")
-        return
-
+async def saveList(ctx, *, arg):
+    
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -67,20 +64,20 @@ async def showList(ctx):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+    if len(result) == 0:
+        raise Exception()
     if len(mylist) == 5:
         print(mylist)
+        raise Exception()
         await ctx.send("The list is empty!")
-    else:
+    else:                                             
         mylist = mylist[2:-3]
         print(mylist)
         await ctx.send(mylist)
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
-async def delAnime(ctx, *, arg = None):
-    if(arg == None):
-        await ctx.send("Incorrect Usage: !delAnime <anime name>")
-        return
-
+async def delAnime(ctx, *, arg):
+    
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -117,6 +114,33 @@ async def createList(ctx):
         cur.execute(sqladd, valadd)
         await ctx.send("New watch list created!")
         conn.commit()
+
+#Exception Handling
+
+@bot.check
+def check_command(ctx):
+    return ctx.command.qualified_name
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandInvokeError):
+        if check_command(ctx) == "showList":
+            await ctx.send("> You don't have a list saved!" + '\n' +
+                            "> Use `!createList` to start a list" + '\n')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        if check_command(ctx) == "saveList":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!savelist <anime title>` to save an anime to your list" + '\n')
+        if check_command(ctx) == "delAnime":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("> Command not found!" + '\n' +
+                        "> Use `!help` for list of commands" + '\n' +
+                        "> Use `!help <command name>` for specific command details")  
+    else:
+        raise error
+
 
 @bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
 async def deleteList(ctx):
@@ -221,4 +245,3 @@ async def help(ctx, *, arg = None):
     await ctx.send(embed=embed)
     
     
-bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
