@@ -156,12 +156,6 @@ async def on_command_error(ctx, error):
         if check_command(ctx) == "delAnime":
             await ctx.send("> Incorrect Usage!" + '\n' +
                             "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
-    if check_command(ctx) == "hi":
-        pass
-    if check_command(ctx) == "join":
-        pass
-    if check_command(ctx) == "leave":
-        pass
     
     elif isinstance(error, commands.CommandNotFound):
         await ctx.send("> Command not found!" + '\n' +
