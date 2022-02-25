@@ -1,5 +1,10 @@
 import discord
+from discord import Embed
 from discord.ext import commands
+from discord_components import *
+from operator import truediv
+import datetime
+import asyncio
 import mysql.connector
 
 bot = commands.Bot(command_prefix='!', help_command=None)
@@ -39,13 +44,23 @@ async def on_message(message):
     await bot.process_commands(message)
     
 # COMMANDS
-
+@bot.command(name = "menu", aliases=["Menu"])
+async def menu(ctx):
+    await ctx.send("Menu", components = [
+        [Button(label="Help", style="2", emoji = "0️⃣", custom_id="button0"), 
+         Button(label="Create List", style="2", emoji = "1️⃣", custom_id="button1"),
+         Button(label="Save List", style="2", emoji = "2️⃣", custom_id="button2"),
+         Button(label="Show List", style="2", emoji = "3️⃣", custom_id="button3"),
+         Button(label="Delete Anime", style="2", emoji = "4️⃣", custom_id="button4")
+        # Button(label="Delete List", style="3", emoji = "5️⃣", custom_id="button5")
+        ]
+            ])
+    interaction = await bot.wait_for("button_click", check = lambda i: i.custom_id == "button0")
+    await interaction.send(content = "Button clicked!", ephemeral=False)
+    
 @bot.command(name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True)
-async def saveList(ctx, *, arg = None):
-    if(arg == None):
-        await ctx.send("Incorrect Usage: !saveList <anime name>")
-        return
-
+async def saveList(ctx, *, arg):
+    
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -61,26 +76,32 @@ async def saveList(ctx, *, arg = None):
     conn.commit()
     await ctx.send(arg + " saved to list")
 
+async def sortWatchList(wString):
+    delim = ", "
+    result = delim.join(sorted(wString.split(", ")))
+    return result
+
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
 async def showList(ctx):
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+    if len(result) == 0:
+        raise Exception()
     if len(mylist) == 5:
         print(mylist)
+        raise Exception()
         await ctx.send("The list is empty!")
-    else:
+    else:                                             
         mylist = mylist[2:-3]
+        mylist = await sortWatchList(mylist)
         print(mylist)
         await ctx.send(mylist)
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
-async def delAnime(ctx, *, arg = None):
-    if(arg == None):
-        await ctx.send("Incorrect Usage: !delAnime <anime name>")
-        return
-
+async def delAnime(ctx, *, arg):
+    
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -118,8 +139,36 @@ async def createList(ctx):
         await ctx.send("New watch list created!")
         conn.commit()
 
-@bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
-async def deleteList(ctx):
+#Exception Handling
+
+@bot.check
+def check_command(ctx):
+    return ctx.command.qualified_name
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandInvokeError):
+        if check_command(ctx) == "showList":
+            await ctx.send("> You don't have a list saved!" + '\n' +
+                            "> Use `!createList` to start a list" + '\n')
+    elif isinstance(error, commands.MissingRequiredArgument):
+        if check_command(ctx) == "saveList":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!savelist <anime title>` to save an anime to your list" + '\n')
+        if check_command(ctx) == "delAnime":
+            await ctx.send("> Incorrect Usage!" + '\n' +
+                            "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
+    
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("> Command not found!" + '\n' +
+                        "> Use `!help` for list of commands" + '\n' +
+                        "> Use `!help <command name>` for specific command details")  
+    else:
+        raise error
+
+
+@bot.command(name="clearList", aliases=["Clearlist", "ClearList", "clearlist"], pass_context=True)
+async def clearList(ctx):
     author_id = str(ctx.message.author.id)
     cur.execute(f"select user_id from watchlist where user_id = {author_id}")
     find_id = cur.fetchall()
@@ -133,9 +182,20 @@ async def deleteList(ctx):
         else:
             cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
             conn.commit()
-            await ctx.send("List deleted!")
+            await ctx.send("List cleared!")
     else:
         await ctx.send("You don't have any list saved!")
+
+@bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
+async def deleteList(ctx):
+    author_id = str(ctx.message.author.id)
+    cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+    find_id = cur.fetchall()
+    if len(find_id) != 0:
+        cur.execute(f"DELETE FROM watchlist where user_id = {author_id}")
+        await ctx.send("List deleted!")
+    else:
+        await ctx.send("You don't have a list baka!")
 
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
@@ -216,9 +276,44 @@ async def help(ctx, *, arg = None):
         color = discord.Color.blue()
     )
     embed.set_footer(text=f'Requested by - {ctx.author}', icon_url = ctx.author.avatar_url)
-    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `.......`')
-    embed.add_field(name='Details:',value='`commandDetails`', inline = False)
+    embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `clearList`')
+    embed.add_field(name='Details:',value='`!help <command>`', inline = False)
     await ctx.send(embed=embed)
+
+@bot.command(name="poll", aliases=["Poll"], pass_context=True)
+async def poll(ctx,choice1,choice2,*,question):
+    embed = discord.Embed(
+        title = question,
+        description = f":one: {choice1}\n\n:two: {choice2}",
+        color = discord.Color.blue(),
+        timestamp = datetime.datetime.utcnow()
+    )
+    embed.set_footer(text = f"Poll by {ctx.author.name}")
+    embed.set_thumbnail(url = ctx.author.avatar_url)
+    message = await ctx.send(embed = embed)
+    await message.add_reaction("1️⃣")
+    await message.add_reaction("2️⃣")
+    await asyncio.sleep(5)
+
+    newmessage = await ctx.fetch_message(message.id) 
+    firstChoice = await newmessage.reactions[0].users().flatten()
+    secondChoice = await newmessage.reactions[1].users().flatten()
+
+    result = "TIE"
+    if len(firstChoice) > len(secondChoice):
+        result = choice1
+    elif len(secondChoice) > len(firstChoice):
+        result = choice2
+
+    embed2 = discord.Embed(
+        title = question,
+        description = f"Vote has concluded:\nResult : {result}",
+        color = discord.Color.blue(),
+        timestamp = datetime.datetime.utcnow()
+    )
+    embed2.set_footer(text = f"{choice1} || {choice2} ")
+    await newmessage.edit(embed = embed2)
     
-    
+
+# Bot Token    
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
