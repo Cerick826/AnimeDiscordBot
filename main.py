@@ -3,6 +3,8 @@ from discord import Embed
 from discord.ext import commands
 from discord_components import *
 from operator import truediv
+import datetime
+import asyncio
 import mysql.connector
 
 bot = commands.Bot(command_prefix='!', help_command=None)
@@ -277,6 +279,41 @@ async def help(ctx, *, arg = None):
     embed.add_field(name='Commands:',value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `clearList`')
     embed.add_field(name='Details:',value='`!help <command>`', inline = False)
     await ctx.send(embed=embed)
+
+@bot.command(name="poll", aliases=["Poll"], pass_context=True)
+async def poll(ctx,choice1,choice2,*,question):
+    embed = discord.Embed(
+        title = question,
+        description = f":one: {choice1}\n\n:two: {choice2}",
+        color = discord.Color.blue(),
+        timestamp = datetime.datetime.utcnow()
+    )
+    embed.set_footer(text = f"Poll by {ctx.author.name}")
+    embed.set_thumbnail(url = ctx.author.avatar_url)
+    message = await ctx.send(embed = embed)
+    await message.add_reaction("1️⃣")
+    await message.add_reaction("2️⃣")
+    await asyncio.sleep(5)
+
+    newmessage = await ctx.fetch_message(message.id) 
+    firstChoice = await newmessage.reactions[0].users().flatten()
+    secondChoice = await newmessage.reactions[1].users().flatten()
+
+    result = "TIE"
+    if len(firstChoice) > len(secondChoice):
+        result = choice1
+    elif len(secondChoice) > len(firstChoice):
+        result = choice2
+
+    embed2 = discord.Embed(
+        title = question,
+        description = f"Vote has concluded:\nResult : {result}",
+        color = discord.Color.blue(),
+        timestamp = datetime.datetime.utcnow()
+    )
+    embed2.set_footer(text = f"{choice1} || {choice2} ")
+    await newmessage.edit(embed = embed2)
     
+
+# Bot Token    
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
-    
