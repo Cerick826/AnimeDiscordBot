@@ -257,7 +257,6 @@ async def help(ctx, *, arg = None):
         return
 
     elif(arg == "deleteList" or arg == "deletelist" or arg == "Deletelist" or arg == "DeleteList"):
-        # await ctx.send("deleteList Usage: !deleteList")
         embeddeleteList = discord.Embed(
         title = '**Help Menu**',
         description = '',
@@ -313,5 +312,6 @@ async def poll(ctx,choice1,choice2,*,question):
     )
     embed2.set_footer(text = f"{choice1} || {choice2} ")
     await newmessage.edit(embed = embed2)
+    
     
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
