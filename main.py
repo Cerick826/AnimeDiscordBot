@@ -314,6 +314,4 @@ async def poll(ctx,choice1,choice2,*,question):
     embed2.set_footer(text = f"{choice1} || {choice2} ")
     await newmessage.edit(embed = embed2)
     
-
-# Bot Token    
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
