@@ -10,3 +10,33 @@
     background-size: cover;
     height: 109vh; 
 }
+
+h1 {
+    text-align: center;
+    color: white;
+    padding: 70px;
+    font-size: 300%;
+}
+
+ul {
+    display: table;
+    color: white;
+    padding: 70px;
+}
+
+h3 {
+    color: white;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+p {
+    color: white;
+    padding: 70px;
+}
+
+.button {
+    text-align: center;
+}
