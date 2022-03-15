@@ -19,6 +19,13 @@ h1 {
     font-size: 300%;
 }
 
+h2 {
+    text-align: center;
+    color: white;
+    padding: 70px;
+    font-size: 300%;
+}
+
 ul {
     display: table;
     color: white;
@@ -39,7 +46,8 @@ body {
 }
 
 .accordion {
-    max-width: 800px;
+    max-width: 500px;
+    text-align: center
 }
 
 .accordion .content-box {
@@ -70,7 +78,7 @@ body {
 
 .accordion .content-box .content {
     position: relative;
-    background: white;
+    background: black;
     height: 0;
     overflow: hidden;
     transition: 0.5s;
