@@ -1,6 +1,7 @@
 from click import CommandCollection
 import discord
 import asyncio
+import aiohttp
 from discord import Embed
 from discord.ext import commands
 from discord_components import *
@@ -369,6 +370,19 @@ async def help(ctx, *, arg=None):
         embeddeleteList.add_field(name='Usage:', value='`!deleteList`', inline=False)
         await ctx.send(embed=embeddeleteList)
         return
+      
+    elif (arg == "poll" or arg == "Poll"):
+        embedpoll = discord.Embed(
+            title='**Help Menu**',
+            description='',
+            color=discord.Color.blue()
+        )
+        embedpoll.set_footer(text=f'Requested by - {ctx.author}', icon_url=ctx.author.avatar_url)
+        embedpoll.add_field(name='Command: poll', value='Alias:  `Poll`')
+        embedpoll.add_field(name='Details:', value='`Creates a poll for users to vote on`', inline=False)
+        embedpoll.add_field(name='Usage:', value='`!poll <choice1> <choice2> <question>`', inline=False)
+        await ctx.send(embed=embedpoll)
+        return
 
     embed = discord.Embed(
         title='**Help Menu**',
@@ -394,7 +408,7 @@ async def poll(ctx, choice1, choice2, *, question):
     message = await ctx.send(embed=embed)
     await message.add_reaction("1️⃣")
     await message.add_reaction("2️⃣")
-    await asyncio.sleep(5)
+    await asyncio.sleep(10)
 
     newmessage = await ctx.fetch_message(message.id)
     firstChoice = await newmessage.reactions[0].users().flatten()
@@ -414,6 +428,18 @@ async def poll(ctx, choice1, choice2, *, question):
     )
     embed2.set_footer(text=f"{choice1} || {choice2} ")
     await newmessage.edit(embed=embed2)
+    
+@bot.command(name="animePic", aliases=["animepic"], pass_context=True)
+async def animePic(ctx):
+    async with ctx.channel.typing():
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get("https://aws.random.cat/meow") as r:
+                data = await r.json()
+
+                embed = discord.Embed(title= "Picture")
+                embed.set_image(url=data['file'])
+                
+                await ctx.send(embed=embed)
 
 
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
