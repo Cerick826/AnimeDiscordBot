@@ -96,5 +96,19 @@ p {
 }
 
 .button {
+    padding: 15px 32px;
     text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.b1 {
+    background-color: blue; 
+    color: white; 
+    border: 2px solid blue;
+}
+  
+.b1:hover {
+    background-color: white;
+    color: black;
 }
