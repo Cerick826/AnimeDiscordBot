@@ -1,7 +1,9 @@
 import discord
+import asyncio
 from discord import Embed
 from discord.ext import commands
 from discord_components import *
+from utils import sortWatchList
 from operator import truediv
 import mysql.connector
 
@@ -65,8 +67,10 @@ async def saveList(ctx, *, arg):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     print(mylist)
-    if len(mylist) == 5 or len(mylist) == 6:
+    if len(mylist) == 5 or len(mylist) == 0:
         mylist = str(arg)
     else:
         mylist = mylist[2:-3]
@@ -74,13 +78,8 @@ async def saveList(ctx, *, arg):
     print(mylist)
     cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
     conn.commit()
-    await ctx.send(arg + " saved to list")
-
-
-async def sortWatchList(wString):
-    delim = ", "
-    result = delim.join(sorted(wString.split(", ")))
-    return result
+    embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
@@ -89,17 +88,24 @@ async def showList(ctx):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
-    if len(result) == 0:
-        raise Exception()
-    if len(mylist) == 5:
+    embed = discord.Embed(title="Anime list", description="My saved animes: ", color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    #if len(result) == 0:
+        # raise Exception()
+    if len(mylist) == 5 or len(mylist) == 0:
         print(mylist)
-        raise Exception()
-        await ctx.send("The list is empty!")
+        # raise Exception()
+        embed.add_field(name="Error", value="The list is empty!", inline=False)
+        await ctx.send(embed=embed)
     else:
         mylist = mylist[2:-3]
         mylist = await sortWatchList(mylist)
+        counter = 1
+        for anime in mylist.split(","):
+            embed.add_field(name=f'{counter}', value=f"{anime}", inline=True)
+            counter += 1
         print(mylist)
-        await ctx.send(mylist)
+        await ctx.send(embed=embed)
 
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
@@ -108,9 +114,12 @@ async def delAnime(ctx, *, arg):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
-    if len(mylist) == 5:
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    if len(mylist) == 5 or len(mylist) == 0:
         print(mylist)
-        await ctx.send("The list is empty!")
+        embed.add_field(name="Error", value="The list is empty!", inline=False)
+        await ctx.send(embed=embed)
     else:
         mylist = mylist[2:-3]
         print(mylist)
@@ -123,7 +132,8 @@ async def delAnime(ctx, *, arg):
         mylist = mylist.replace(", ,", ",")
         cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
         conn.commit()
-        await ctx.send(arg + " deleted from anime list!")
+        embed.add_field(name="Success!", value=f"{arg} deleted from anime list!", inline=False)
+        await ctx.send(embed=embed)
 
 
 @bot.command(name="createList", aliases=["Createlist", "CreateList", "createlist"], pass_context=True)
@@ -131,15 +141,18 @@ async def createList(ctx):
     author_id = str(ctx.message.author.id)
     cur.execute(f"select user_id from watchlist where user_id = {author_id}")
     find_id = cur.fetchall()
-
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(find_id) != 0:
-        await ctx.send("You already have a list saved!")
+        embed.add_field(name="Uhhh!", value=f"You already have a list!", inline=False)
+        await ctx.send(embed=embed)
         pass
     else:
         sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
         valadd = (author_id, " ")
         cur.execute(sqladd, valadd)
-        await ctx.send("New watch list created!")
+        embed.add_field(name="Success!", value=f"New watchlist created!", inline=False)
+        await ctx.send(embed=embed)
         conn.commit()
 
 
@@ -176,18 +189,39 @@ async def on_command_error(ctx, error):
 async def clearList(ctx):
     author_id = str(ctx.message.author.id)
     cur.execute(f"select user_id from watchlist where user_id = {author_id}")
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     find_id = cur.fetchall()
     if len(find_id) != 0:
         cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {author_id}")
         result = cur.fetchall()
         mylist = " ".join(map(str, result))
         if len(mylist) == 5:
-            await ctx.send("List is empty")
-            pass
+            embed.add_field(name="Error", value=f"Your list is currently empty", inline=False)
+            await ctx.send(embed=embed)
         else:
-            cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
-            conn.commit()
-            await ctx.send("List cleared!")
+            #Adding reaction double check to confirm user really wanna clearlist
+            embed.add_field(name="Hmm", value=f"This will clear your entire watchlist, you sure?", inline=False)
+            message = await ctx.send(embed=embed)
+            await message.add_reaction("✅")
+            await message.add_reaction("❌")
+            check = lambda r, u: u == ctx.author and str(r.emoji) in "✅❌"  # r=reaction, u=user
+            # Check if user confirm or not. Cancel if it takes too long
+            try:
+                reaction, user = await bot.wait_for("reaction_add", check=check, timeout=30)
+            except asyncio.TimeoutError:
+                await message.edit(content="Interaction timed out!.")
+                return
+            # if user chooses ✅
+            if str(reaction.emoji) == "✅":
+                cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
+                conn.commit()
+                embed.add_field(name="Success", value=f"Anime list cleared", inline=False)
+                await ctx.send(embed=embed)
+            # if user chooses ❌
+            if str(reaction.emoji) == "❌":
+                embed.add_field(name="Hmm", value=f"Interaction canceled", inline=False)
+                await ctx.send(embed=embed)
     else:
         await ctx.send("You don't have any list saved!")
 
@@ -195,13 +229,39 @@ async def clearList(ctx):
 @bot.command(name="deleteList", aliases=["Deletelist", "DeleteList", "deletelist"], pass_context=True)
 async def deleteList(ctx):
     author_id = str(ctx.message.author.id)
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     cur.execute(f"select user_id from watchlist where user_id = {author_id}")
     find_id = cur.fetchall()
+    # Check if user_id is in the database
+    # case user_id is found
     if len(find_id) != 0:
-        cur.execute(f"DELETE FROM watchlist where user_id = {author_id}")
-        await ctx.send("List deleted!")
+        # Adding reaction double check to confirm user really wanna delete the entire list
+        embed.add_field(name="Hmm", value=f"This will delete your entire watchlist from this server, you sure?", inline=False)
+        message = await ctx.send(embed=embed)
+        await message.add_reaction("✅")
+        await message.add_reaction("❌")
+        check = lambda r, u: u == ctx.author and str(r.emoji) in "✅❌"  # r=reaction, u=user
+        # Check if user confirm or not. Cancel if it takes too long
+        try:
+            reaction, user = await bot.wait_for("reaction_add", check=check, timeout=30)
+        except asyncio.TimeoutError:
+            await message.edit(content="Interaction timed out!.")
+            return
+        # if user choose ✅
+        if str(reaction.emoji) == "✅":
+            cur.execute(f"DELETE FROM watchlist where user_id = {author_id}")
+            conn.commit()
+            embed.add_field(name="Success", value=f"List deleted!", inline=False)
+            await ctx.send(embed=embed)
+        # if user chooses ❌
+        if str(reaction.emoji) == "❌":
+            embed.add_field(name="Hmm", value=f"Interaction canceled", inline=False)
+            await ctx.send(embed=embed)
+    # case user_id not existing in database
     else:
-        await ctx.send("You don't have a list baka!")
+        embed.add_field(name="Success", value=f"You don't have a list baka!", inline=False)
+        await ctx.send(embed=embed)
 
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
