@@ -3,7 +3,8 @@ async def sortWatchList(wString):
     result = delim.join(sorted(wString.split(", ")))
     return result
 
-#function to check special characters from database
+# function to check special characters from database
+
 async def check_format(formatString):
     #('',)
     if len(formatString) == 5 or len(formatString) == 0:
