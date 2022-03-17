@@ -1,13 +1,13 @@
+from click import CommandCollection
 import discord
 import asyncio
 from discord import Embed
 from discord.ext import commands
 from discord_components import *
-from utils import sortWatchList
+from utils import sortWatchList, check_format
 from operator import truediv
 import mysql.connector
 import datetime
-
 
 bot = commands.Bot(command_prefix='!', help_command=None)
 bot.remove_command('help')
@@ -21,6 +21,7 @@ async def on_ready():
     print('Bot is ready and Online')
     global botON
     botON = True
+
 
 @bot.event
 async def on_message(message):
@@ -71,16 +72,25 @@ async def saveList(ctx, *, arg):
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     print(mylist)
-    if len(mylist) == 5 or len(mylist) == 0:
-        mylist = str(arg)
+    # if user is present in database...enters if block to save to database
+    if len(result) != 0:
+        if await check_format(mylist):
+            mylist = str(arg)
+        else:
+            mylist = mylist[2:-3]
+            mylist += ", " + str(arg)
+        print(mylist)
+        cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+        conn.commit()
+        embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
+        await ctx.send(embed=embed)
     else:
-        mylist = mylist[2:-3]
-        mylist += ", " + str(arg)
-    print(mylist)
-    cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
-    conn.commit()
-    embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
-    await ctx.send(embed=embed)
+        e_embed.add_field(name="You don't have a list created!", value="Use `!createList` to start a list")
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+
+    
+    
 
 
 @bot.command(name="showList", aliases=["showlist", "ShowList", "Showlist"], pass_context=True)
@@ -91,14 +101,19 @@ async def showList(ctx):
     mylist = " ".join(map(str, result))
     embed = discord.Embed(title="Anime list", description="My saved animes: ", color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    #if len(result) == 0:
-        # raise Exception()
-    if len(mylist) == 5 or len(mylist) == 0:
-        print(mylist)
-        # raise Exception()
-        embed.add_field(name="Error", value="The list is empty!", inline=False)
-        await ctx.send(embed=embed)
-    else:
+    
+    # if user is not present in database
+    # e_embed is global error embed
+    if len(result) == 0:
+        e_embed.add_field(name="You don't have a list created!", value="Use `!createList` to create a list")
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    elif await check_format(mylist):
+        #print(mylist)
+        await on_command_error(ctx, commands.CommandInvokeError)
+        # embed.add_field(name="Error", value="The list is empty!", inline=False)
+        #await ctx.send(embed=embed)
+    elif len(mylist) > 5:
         mylist = mylist[2:-3]
         mylist = await sortWatchList(mylist)
         counter = 1
@@ -107,7 +122,8 @@ async def showList(ctx):
             counter += 1
         print(mylist)
         await ctx.send(embed=embed)
-
+    
+    
 
 @bot.command(name="delAnime", aliases=["Delanime", "DelAnime", "delanime"], pass_context=True)
 async def delAnime(ctx, *, arg):
@@ -117,10 +133,19 @@ async def delAnime(ctx, *, arg):
     mylist = " ".join(map(str, result))
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    if len(mylist) == 5 or len(mylist) == 0:
-        print(mylist)
-        embed.add_field(name="Error", value="The list is empty!", inline=False)
-        await ctx.send(embed=embed)
+    if len(result) == 0:
+        e_embed.add_field(name="You don't have a list created!", value="Use `!createList` to start a list")
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    elif await check_format(mylist):
+        #print(mylist)
+        e_embed.add_field(name="Your list is empty!", value="Use `!savelist <anime title>` to start a list", inline=False)
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    elif arg not in mylist:
+        e_embed.add_field(name="That anime is not in your list!", value="Use `!showlist` to view saved animes", inline=False)
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
     else:
         mylist = mylist[2:-3]
         print(mylist)
@@ -145,9 +170,9 @@ async def createList(ctx):
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(find_id) != 0:
-        embed.add_field(name="Uhhh!", value=f"You already have a list!", inline=False)
-        await ctx.send(embed=embed)
-        pass
+        e_embed.add_field(name="You already have a list!", value="Use `!savelist <anime title>` to start a list", inline=False)
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
     else:
         sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
         valadd = (author_id, " ")
@@ -163,27 +188,35 @@ async def createList(ctx):
 def check_command(ctx):
     return ctx.command.qualified_name
 
+# Global Embed for error handling format
+e_embed = discord.Embed(
+            title='**Command Error**',
+            description='',
+            color=discord.Color.red()
+        )
 
 @bot.event
 async def on_command_error(ctx, error):
+    e_embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if isinstance(error, commands.CommandInvokeError):
         if check_command(ctx) == "showList":
-            await ctx.send("> You don't have a list saved!" + '\n' +
-                           "> Use `!createList` to start a list" + '\n')
+            e_embed.add_field(name="Your list is empty!", value="Use `!savelist <anime title>` to start a list")
+        
     elif isinstance(error, commands.MissingRequiredArgument):
         if check_command(ctx) == "saveList":
-            await ctx.send("> Incorrect Usage!" + '\n' +
-                           "> Use `!savelist <anime title>` to save an anime to your list" + '\n')
+            e_embed.add_field(name="Incorrect Usage!", value="Use `!savelist <anime title>` to save an anime to your list")
         if check_command(ctx) == "delAnime":
-            await ctx.send("> Incorrect Usage!" + '\n' +
-                           "> Use `!delanime <anime title>` to delete an anime from your list" + '\n')
-
+            e_embed.add_field(name="Incorrect Usage!", value="Use `!delanime <anime title>` to delete an anime from your list")
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("> Command not found!" + '\n' +
-                       "> Use `!help` for list of commands" + '\n' +
-                       "> Use `!help <command name>` for specific command details")
+        e_embed.add_field(name="Command not found!", value="Use `!help` for list of commands\n" +
+                                                            "Use `!help <command name>` for specific command details")
     else:
         raise error
+
+    await ctx.send(embed=e_embed)
+    e_embed.clear_fields()
+
+    
 
 
 @bot.command(name="clearList", aliases=["Clearlist", "ClearList", "clearlist"], pass_context=True)
@@ -197,7 +230,7 @@ async def clearList(ctx):
         cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {author_id}")
         result = cur.fetchall()
         mylist = " ".join(map(str, result))
-        if len(mylist) == 5:
+        if await check_format(mylist):
             embed.add_field(name="Error", value=f"Your list is currently empty", inline=False)
             await ctx.send(embed=embed)
         else:
@@ -347,8 +380,7 @@ async def help(ctx, *, arg=None):
                     value=' `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `clearList`')
     embed.add_field(name='Details:', value='`!help <command>`', inline=False)
     await ctx.send(embed=embed)
-
-
+    
 @bot.command(name="poll", aliases=["Poll"], pass_context=True)
 async def poll(ctx, choice1, choice2, *, question):
     embed = discord.Embed(
