@@ -370,7 +370,7 @@ async def help(ctx, *, arg=None):
         await ctx.send(embed=embeddeleteList)
         return
       
-     elif (arg == "poll" or arg == "Poll"):
+    elif (arg == "poll" or arg == "Poll"):
         embedpoll = discord.Embed(
             title='**Help Menu**',
             description='',
