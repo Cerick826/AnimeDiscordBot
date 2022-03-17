@@ -1,6 +1,7 @@
 from click import CommandCollection
 import discord
 import asyncio
+import aiohttp
 from discord import Embed
 from discord.ext import commands
 from discord_components import *
