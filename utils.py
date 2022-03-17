@@ -1,8 +1,3 @@
-from calendar import formatstring
-
-from numpy import true_divide
-
-
 async def sortWatchList(wString):
     delim = ", "
     result = delim.join(sorted(wString.split(", ")))
