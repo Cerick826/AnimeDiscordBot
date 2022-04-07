@@ -5,7 +5,7 @@ import aiohttp
 from discord import Embed
 from discord.ext import commands
 from discord_components import *
-from utils import sortWatchList, check_format
+from utils import sortWatchList, check_format, check_ep_format
 from operator import truediv
 import mysql.connector
 import datetime
@@ -70,6 +70,11 @@ async def saveList(ctx, *, arg):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+
+    cur.execute(f"SELECT ep FROM watchlist WHERE user_id = {my_id}")
+    epresult = cur.fetchall()
+    myeplist = " ".join(map(str, epresult))
+
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     print(mylist)
@@ -80,8 +85,32 @@ async def saveList(ctx, *, arg):
         else:
             mylist = mylist[2:-3]
             mylist += ", " + str(arg)
+            
         print(mylist)
+
+        if await check_ep_format(myeplist):
+            print("testing")
+            print(myeplist)
+            myeplist = "0"
+            # print("testing")
+            # print(myeplist)
+        else:
+            if myeplist[-2:] == ", ":
+                print("testing5")
+                print(myeplist)
+                myeplist = myeplist[2:-3]
+                myeplist += "0"
+            # print("testing2")
+            # print(myeplist)
+            else:
+                print("testing2")
+                print(myeplist)
+                myeplist = myeplist[2:-3]
+                myeplist += ", 0"
+            
+        
         cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+        cur.execute("""UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id))
         conn.commit()
         embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
         await ctx.send(embed=embed)
@@ -132,6 +161,11 @@ async def delAnime(ctx, *, arg):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+
+    cur.execute(f"SELECT ep FROM watchlist WHERE user_id = {my_id}")
+    epresult = cur.fetchall()
+    myeplist = " ".join(map(str, epresult))
+
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(result) == 0:
@@ -148,19 +182,104 @@ async def delAnime(ctx, *, arg):
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
     else:
-        mylist = mylist[2:-3]
-        print(mylist)
-        mylist = mylist.replace(arg, "")
-        print(mylist[-2:-2])
-        if mylist[-2:-1] == ",":
-            mylist = mylist[:-2]
-        if mylist[0:1] == ",":
-            mylist = mylist[2:]
-        mylist = mylist.replace(", ,", ",")
-        cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
-        conn.commit()
-        embed.add_field(name="Success!", value=f"{arg} deleted from anime list!", inline=False)
-        await ctx.send(embed=embed)
+        
+
+        myeplist = myeplist[2:-3]
+        counter = 0
+        print("anime")
+        for anime in mylist.split(","):
+            if anime == (" " + str(arg)):
+                break
+            if anime == ("('" + str(arg)):
+                break
+            if anime == (" " + str(arg) + "'"):
+                break
+            if anime == ")":
+                counter = -1
+                break
+            print(anime)
+            counter += 1
+        print("counter")
+        print(counter)
+        print("arg")
+        print(arg)
+        if not counter == -1:
+            if counter == 0:
+                first = myeplist.find(",")
+                aft = myeplist[first+2:]
+                myeplist = aft
+            else:
+                counter2 = 0
+                for i in range(0, counter):
+                    counter2 = myeplist.find(",", counter2 + 1)
+
+                counter3 = 0
+                for i in range(0, counter+1):
+                    counter3 = myeplist.find(",", counter3 + 1)
+
+                end = myeplist.rfind(",")
+                if counter2 != end:
+                    bef = myeplist[:counter2]
+                    aft = myeplist[counter3:]
+
+                    myeplist = bef + ", " + aft
+
+                elif counter2 == end:
+                    bef = myeplist[:counter2]
+                    myeplist = bef
+
+            myeplist = myeplist.replace(", ,", ",")
+            print("myeplist")
+            print(myeplist)
+
+            mylist = mylist[2:-3]
+            if counter == 0:
+                first = mylist.find(",")
+                aft = mylist[first+2:]
+                mylist = aft
+            else:
+                counter2 = 0
+                for i in range(0, counter):
+                    counter2 = mylist.find(",", counter2 + 1)
+
+                counter3 = 0
+                for i in range(0, counter+1):
+                    counter3 = mylist.find(",", counter3 + 1)
+
+                end = mylist.rfind(",")
+                if counter2 != end:
+                    bef = mylist[:counter2]
+                    aft = mylist[counter3:]
+
+                    mylist = bef + ", " + aft
+
+                elif counter2 == end:
+                    bef = mylist[:counter2]
+                    mylist = bef
+
+            print(mylist[-2:-2])
+            if mylist[-2:-1] == ",":
+                mylist = mylist[:-2]
+            if mylist[0:1] == ",":
+                mylist = mylist[2:]
+            mylist = mylist.replace(", ,", ",")
+
+
+            cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id))
+            cur.execute("""UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id))
+            conn.commit()
+            embed.add_field(name="Success!", value=f"{arg} deleted from anime list!", inline=False)
+            await ctx.send(embed=embed)
+        
+        else:
+            e_embed.add_field(name="That anime is not in your list!", value="Use `!showlist` to view saved animes", inline=False)
+            await ctx.send(embed=e_embed)
+            e_embed.clear_fields()
+
+
+
+
+        
 
 
 @bot.command(name="createList", aliases=["Createlist", "CreateList", "createlist"], pass_context=True)
@@ -175,8 +294,8 @@ async def createList(ctx):
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
     else:
-        sqladd = "INSERT INTO watchlist (user_id, animelist) VALUES (%s, %s)"
-        valadd = (author_id, " ")
+        sqladd = "INSERT INTO watchlist (user_id, animelist, ep) VALUES (%s, %s, %s)"
+        valadd = (author_id, " ", " ")
         cur.execute(sqladd, valadd)
         embed.add_field(name="Success!", value=f"New watchlist created!", inline=False)
         await ctx.send(embed=embed)
@@ -250,6 +369,7 @@ async def clearList(ctx):
             # if user chooses ✅
             if str(reaction.emoji) == "✅":
                 cur.execute("""UPDATE watchlist SET animelist= %s WHERE user_id = %s""", ("", author_id))
+                cur.execute("""UPDATE watchlist SET ep= %s WHERE user_id = %s""", ("", author_id))
                 conn.commit()
                 embed.add_field(name="Success", value=f"Anime list cleared", inline=False)
                 await ctx.send(embed=embed)
@@ -440,6 +560,91 @@ async def animePic(ctx):
                 embed.set_image(url=data['file'])
                 
                 await ctx.send(embed=embed)
+
+@bot.command(name="setEp", aliases=["setep"], pass_context=True)
+async def setEp(ctx, *, arg):
+    endspace = arg.rfind(" ")
+    episode = arg[endspace+1:]
+    animename = arg[0:endspace]
+    
+    my_id = str(ctx.message.author.id)
+    cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
+    result = cur.fetchall()
+    mylist = " ".join(map(str, result))
+
+    cur.execute(f"SELECT ep FROM watchlist WHERE user_id = {my_id}")
+    epresult = cur.fetchall()
+    myeplist = " ".join(map(str, epresult))
+
+
+    embed = discord.Embed(color=0x14ebc0)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    if len(result) == 0:
+        e_embed.add_field(name="You don't have a list created!", value="Use `!createList` to start a list")
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    elif await check_format(mylist):
+        #print(mylist)
+        e_embed.add_field(name="Your list is empty!", value="Use `!savelist <anime title>` to start a list", inline=False)
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    elif animename not in mylist:
+        e_embed.add_field(name="That anime is not in your list!", value="Use `!showlist` to view saved animes", inline=False)
+        await ctx.send(embed=e_embed)
+        e_embed.clear_fields()
+    else:
+        
+        myeplist = myeplist[2:-3]
+        counter = 0
+        for anime in mylist.split(","):
+            if anime == (" " + str(animename)):
+                break
+            if anime == ("('" + str(animename)):
+                break
+            if anime == (" " + str(animename) + "'"):
+                break
+            if anime == ")":
+                counter = -1
+                break
+            counter += 1
+        if not counter == -1:
+            if counter == 0:
+                first = myeplist.find(",")
+                aft = myeplist[first:]
+                myeplist = str(episode) + aft
+            else:
+                counter2 = 0
+                for i in range(0, counter):
+                    counter2 = myeplist.find(",", counter2 + 1)
+
+                counter3 = 0
+                for i in range(0, counter+1):
+                    counter3 = myeplist.find(",", counter3 + 1)
+
+                end = myeplist.rfind(",")
+                if counter2 != end:
+                    bef = myeplist[:counter2]
+                    aft = myeplist[counter3:]
+
+                    myeplist = bef + ", " + str(episode) + aft
+
+                elif counter2 == end:
+                    bef = myeplist[:counter2]
+                    myeplist = bef + ", " + str(episode)
+
+            myeplist = myeplist.replace(", ,", ",")
+            print("myeplist")
+            print(myeplist)
+            
+            cur.execute("""UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id))
+            conn.commit()
+            embed.add_field(name="Success!", value=f"{animename} updated to episode {episode}!", inline=False)
+            await ctx.send(embed=embed)
+        
+        else:
+            e_embed.add_field(name="That anime is not in your list!", value="Use `!showlist` to view saved animes", inline=False)
+            await ctx.send(embed=e_embed)
+            e_embed.clear_fields()
 
 
 bot.run('OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ')
