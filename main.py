@@ -77,7 +77,6 @@ async def saveList(ctx, *, arg):
 
     embed = discord.Embed(color=0x14ebc0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    print(mylist)
     # if user is present in database...enters if block to save to database
     if len(result) != 0:
         if await check_format(mylist):
@@ -85,26 +84,14 @@ async def saveList(ctx, *, arg):
         else:
             mylist = mylist[2:-3]
             mylist += ", " + str(arg)
-            
-        print(mylist)
 
         if await check_ep_format(myeplist):
-            print("testing")
-            print(myeplist)
             myeplist = "0"
-            # print("testing")
-            # print(myeplist)
         else:
             if myeplist[-2:] == ", ":
-                print("testing5")
-                print(myeplist)
                 myeplist = myeplist[2:-3]
                 myeplist += "0"
-            # print("testing2")
-            # print(myeplist)
             else:
-                print("testing2")
-                print(myeplist)
                 myeplist = myeplist[2:-3]
                 myeplist += ", 0"
             
@@ -139,7 +126,6 @@ async def showList(ctx):
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
     elif await check_format(mylist):
-        #print(mylist)
         await on_command_error(ctx, commands.CommandInvokeError)
         # embed.add_field(name="Error", value="The list is empty!", inline=False)
         #await ctx.send(embed=embed)
@@ -150,7 +136,6 @@ async def showList(ctx):
         for anime in mylist.split(","):
             embed.add_field(name=f'{counter}', value=f"{anime}", inline=True)
             counter += 1
-        print(mylist)
         await ctx.send(embed=embed)
     
     
@@ -173,7 +158,6 @@ async def delAnime(ctx, *, arg):
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
     elif await check_format(mylist):
-        #print(mylist)
         e_embed.add_field(name="Your list is empty!", value="Use `!savelist <anime title>` to start a list", inline=False)
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
@@ -186,7 +170,6 @@ async def delAnime(ctx, *, arg):
 
         myeplist = myeplist[2:-3]
         counter = 0
-        print("anime")
         for anime in mylist.split(","):
             if anime == (" " + str(arg)):
                 break
@@ -197,12 +180,7 @@ async def delAnime(ctx, *, arg):
             if anime == ")":
                 counter = -1
                 break
-            print(anime)
             counter += 1
-        print("counter")
-        print(counter)
-        print("arg")
-        print(arg)
         if not counter == -1:
             if counter == 0:
                 first = myeplist.find(",")
@@ -229,8 +207,6 @@ async def delAnime(ctx, *, arg):
                     myeplist = bef
 
             myeplist = myeplist.replace(", ,", ",")
-            print("myeplist")
-            print(myeplist)
 
             mylist = mylist[2:-3]
             if counter == 0:
@@ -257,7 +233,6 @@ async def delAnime(ctx, *, arg):
                     bef = mylist[:counter2]
                     mylist = bef
 
-            print(mylist[-2:-2])
             if mylist[-2:-1] == ",":
                 mylist = mylist[:-2]
             if mylist[0:1] == ",":
@@ -584,7 +559,6 @@ async def setEp(ctx, *, arg):
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
     elif await check_format(mylist):
-        #print(mylist)
         e_embed.add_field(name="Your list is empty!", value="Use `!savelist <anime title>` to start a list", inline=False)
         await ctx.send(embed=e_embed)
         e_embed.clear_fields()
@@ -633,8 +607,6 @@ async def setEp(ctx, *, arg):
                     myeplist = bef + ", " + str(episode)
 
             myeplist = myeplist.replace(", ,", ",")
-            print("myeplist")
-            print(myeplist)
             
             cur.execute("""UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id))
             conn.commit()
