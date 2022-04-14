@@ -9,6 +9,7 @@ from discord_components import *
 from discord.ext import commands
 from click import CommandCollection
 from utils import sortWatchList, check_format, check_ep_format
+from exceptions import ExceptionHandle
 
 
 bot = commands.Bot(command_prefix="!", help_command=None)
@@ -22,6 +23,14 @@ conn = mysql.connector.connect(
 )
 cur = conn.cursor()
 
+# global ExceptionHandle object
+error_obj = ExceptionHandle()
+# Global Embed for error handling format
+e_embed = discord.Embed(
+    title='**Command Error**',
+    description='',
+    color=discord.Color.red()
+)
 
 @bot.event
 async def on_ready():
@@ -123,12 +132,7 @@ async def saveList(ctx, *, arg):
         embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
         await ctx.send(embed=embed)
     else:
-        e_embed.add_field(
-            name="You don't have a list created!",
-            value="Use `!createList` to start a list",
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.no_list_error(ctx)
 
 
 @bot.command(
@@ -147,16 +151,11 @@ async def showList(ctx):
     # if user is not present in database
     # e_embed is global error embed
     if len(result) == 0:
-        e_embed.add_field(
-            name="You don't have a list created!",
-            value="Use `!createList` to create a list",
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.no_list_error(ctx)
+
     elif await check_format(mylist):
-        await on_command_error(ctx, commands.CommandInvokeError)
-        # embed.add_field(name="Error", value="The list is empty!", inline=False)
-        # await ctx.send(embed=embed)
+        await error_obj.empty_list_error(ctx)
+
     elif len(mylist) > 5:
         mylist = mylist[2:-3]
         mylist = await sortWatchList(mylist)
@@ -183,28 +182,14 @@ async def delAnime(ctx, *, arg):
     embed = discord.Embed(color=0x14EBC0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(result) == 0:
-        e_embed.add_field(
-            name="You don't have a list created!",
-            value="Use `!createList` to start a list",
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.no_list_error(ctx)
+
     elif await check_format(mylist):
-        e_embed.add_field(
-            name="Your list is empty!",
-            value="Use `!savelist <anime title>` to start a list",
-            inline=False,
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.empty_list_error(ctx)
+
     elif arg not in mylist:
-        e_embed.add_field(
-            name="That anime is not in your list!",
-            value="Use `!showlist` to view saved animes",
-            inline=False,
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.missing_anime_error(ctx)
+
     else:
 
         myeplist = myeplist[2:-3]
@@ -292,13 +277,7 @@ async def delAnime(ctx, *, arg):
             await ctx.send(embed=embed)
 
         else:
-            e_embed.add_field(
-                name="That anime is not in your list!",
-                value="Use `!showlist` to view saved animes",
-                inline=False,
-            )
-            await ctx.send(embed=e_embed)
-            e_embed.clear_fields()
+            error_obj.missing_anime_error(ctx)
 
 
 @bot.command(
@@ -313,13 +292,8 @@ async def createList(ctx):
     embed = discord.Embed(color=0x14EBC0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(find_id) != 0:
-        e_embed.add_field(
-            name="You already have a list!",
-            value="Use `!savelist <anime title>` to start a list",
-            inline=False,
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.existing_list_error(ctx)
+
     else:
         sqladd = "INSERT INTO watchlist (user_id, animelist, ep) VALUES (%s, %s, %s)"
         valadd = (author_id, " ", " ")
@@ -328,51 +302,6 @@ async def createList(ctx):
         await ctx.send(embed=embed)
         conn.commit()
 
-
-# Exception Handling
-@bot.check
-def check_command(ctx):
-    return ctx.command.qualified_name
-
-
-# Global Embed for error handling format
-e_embed = discord.Embed(
-    title="**Command Error**", description="", color=discord.Color.red()
-)
-
-
-@bot.event
-async def on_command_error(ctx, error):
-    e_embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    if isinstance(error, commands.CommandInvokeError):
-        if check_command(ctx) == "showList":
-            e_embed.add_field(
-                name="Your list is empty!",
-                value="Use `!savelist <anime title>` to start a list",
-            )
-
-    elif isinstance(error, commands.MissingRequiredArgument):
-        if check_command(ctx) == "saveList":
-            e_embed.add_field(
-                name="Incorrect Usage!",
-                value="Use `!savelist <anime title>` to save an anime to your list",
-            )
-        if check_command(ctx) == "delAnime":
-            e_embed.add_field(
-                name="Incorrect Usage!",
-                value="Use `!delanime <anime title>` to delete an anime from your list",
-            )
-    elif isinstance(error, commands.CommandNotFound):
-        e_embed.add_field(
-            name="Command not found!",
-            value="Use `!help` for list of commands\n"
-            + "Use `!help <command name>` for specific command details",
-        )
-    else:
-        raise error
-
-    await ctx.send(embed=e_embed)
-    e_embed.clear_fields()
 
 
 @bot.command(
@@ -389,10 +318,8 @@ async def clearList(ctx):
         result = cur.fetchall()
         mylist = " ".join(map(str, result))
         if await check_format(mylist):
-            embed.add_field(
-                name="Error", value=f"Your list is currently empty", inline=False
-            )
-            await ctx.send(embed=embed)
+            await error_obj.empty_list_error(ctx)
+
         else:
             # Adding reaction double check to confirm user really wanna clearlist
             embed.add_field(
@@ -434,7 +361,7 @@ async def clearList(ctx):
                 embed.add_field(name="Hmm", value=f"Interaction canceled", inline=False)
                 await ctx.send(embed=embed)
     else:
-        await ctx.send("You don't have any list saved!")
+        await error_obj.no_list_error(ctx)
 
 
 @bot.command(
@@ -481,10 +408,7 @@ async def deleteList(ctx):
             await ctx.send(embed=embed)
     # case user_id not existing in database
     else:
-        embed.add_field(
-            name="Success", value=f"You don't have a list baka!", inline=False
-        )
-        await ctx.send(embed=embed)
+        await error_obj.no_list_error(ctx)
 
 
 @bot.command(name="help", aliases=["Help"], pass_context=True)
@@ -700,28 +624,14 @@ async def setEp(ctx, *, arg):
     embed = discord.Embed(color=0x14EBC0)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if len(result) == 0:
-        e_embed.add_field(
-            name="You don't have a list created!",
-            value="Use `!createList` to start a list",
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.no_list_error(ctx)
+
     elif await check_format(mylist):
-        e_embed.add_field(
-            name="Your list is empty!",
-            value="Use `!savelist <anime title>` to start a list",
-            inline=False,
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.empty_list_error(ctx)
+
     elif animename not in mylist:
-        e_embed.add_field(
-            name="That anime is not in your list!",
-            value="Use `!showlist` to view saved animes",
-            inline=False,
-        )
-        await ctx.send(embed=e_embed)
-        e_embed.clear_fields()
+        await error_obj.missing_anime_error(ctx)
+
     else:
 
         myeplist = myeplist[2:-3]
@@ -776,13 +686,7 @@ async def setEp(ctx, *, arg):
             await ctx.send(embed=embed)
 
         else:
-            e_embed.add_field(
-                name="That anime is not in your list!",
-                value="Use `!showlist` to view saved animes",
-                inline=False,
-            )
-            await ctx.send(embed=e_embed)
-            e_embed.clear_fields()
+            await error_obj.missing_anime_error(ctx)
 
 
 @bot.command(
@@ -862,5 +766,28 @@ async def mostPopular(ctx):
     embed.set_footer(text="Source: MyAnimeList")
     await ctx.send(embed=embed)
 
+
+@bot.check
+def check_command(ctx):
+    return ctx.command.qualified_name
+
+@bot.event
+async def on_command_error(ctx, error):
+    e_embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    if isinstance(error, commands.MissingRequiredArgument):
+        if check_command(ctx) == "saveList":
+            e_embed.add_field(name="Incorrect Usage!", value="Use `!savelist <anime title>` to save an anime to your list")
+        if check_command(ctx) == "delAnime":
+            e_embed.add_field(name="Incorrect Usage!", value="Use `!delanime <anime title>` to delete an anime from your list")
+        if check_command(ctx) == "poll":
+            e_embed.add_field(name="Incorrect Usage!", value="Use `!poll <anime #1> <anime #2>` to create a poll between two animes")
+    elif isinstance(error, commands.CommandNotFound):
+        e_embed.add_field(name="Command not found!", value="Use `!help` for list of commands\n" +
+                                                           "Use `!help <command name>` for specific command details")
+    else:
+        raise error
+
+    await ctx.send(embed=e_embed)
+    e_embed.clear_fields()
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
