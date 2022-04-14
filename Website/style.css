@@ -1,43 +1,98 @@
 *{
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-.main{
-    width: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.5)50%, rgba(0,0,0,0.5)50%), url(logo.jpg);
-    background-position: center;
-    background-size: cover;
-    height: 109vh; 
+/* --- variables --- */
+/* background - gradient color palette */
+:root {
+    --imperial-red: #e63946;
+    --honeydew: #f1faee;
+    --powder-blue: #a8dadc;
+    --celadon-blue: #457b9d;
+    --prussian-blue: #1d3557;
 }
 
-h1 {
-    text-align: center;
-    color: white;
-    padding: 70px;
-    font-size: 300%;
-}
-
-ul {
-    display: table;
-    color: white;
-    padding: 70px;
-}
-
-h3 {
-    color: white;
-}
-
+/* --- global settings --- */
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: white;
+    text-align: center;
 }
 
+.wrapper {
+    width: 1170px;
+    margin: 0 auto;
+}
+
+header {
+    height: 100px;
+    background: #262626;
+    width: 100%;
+    z-index: 12;
+    position: fixed;
+}
+
+.logo {
+    width: 25%;
+    float: left;
+    line-height: 100px;
+}
+
+.logo a {
+    text-decoration: none;
+    font-size: 30px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    color: #fff;
+    letter-spacing: 5px;
+    background-position: center;
+}
+
+.banner-area {
+    width: 100%;
+    height: 500px;
+    position: fixed;
+    top: 100px;
+    background-image: url(logo.jpg);
+    -webkit-background-size: cover;
+    background-size: cover;
+    background-position: center center;
+}
+
+.banner-area h2 {
+    padding-top: 8%;
+    font-size: 70px;
+    font-family: 'Courier New', Courier, monospace;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.content-area {
+    width: 100%;
+    position: relative;
+    top: 450px;
+    background: #ddd;
+    height: 1500px;
+}
+
+.content-area h2 {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    letter-spacing: 4px;
+    padding-top: 30px;
+    font-size: 40px;
+    margin: 0;
+}
+
+.content-area p {
+    padding: 2% 0;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    line-height: 30px;
+}
+
+/* --- discord button --- */
+.button {
+    text-align: center;
+}
+
+/* --- toggle menu --- */
 .accordion {
     max-width: 800px;
 }
@@ -50,9 +105,10 @@ body {
 .accordion .content-box .label {
     position: relative;
     padding: 10px;
-    background: blue;
+    background: var(--imperial-red);
     color: white;
     cursor: pointer;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .accordion .content-box .label::before {
@@ -80,13 +136,7 @@ body {
 .accordion .content-box.active .content {
     height: 150px;
     padding: 10px;
+    
 }
 
-p {
-    color: white;
-    padding: 70px;
-}
 
-.button {
-    text-align: center;
-}
