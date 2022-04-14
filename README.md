@@ -38,8 +38,6 @@ Will contain list of animes
 Store user data from queries
 
 Server for cloud hosting, and constant bot uptime
-[Server](http://aws.amazon.com/free/)
-
 
 
 
