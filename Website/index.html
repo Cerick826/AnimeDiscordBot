@@ -1,84 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title> Anime Discord Bot </title>
-    <link rel="stylesheet" href="style.css"> 
-</head>
-<body>
-    <div class="main"> 
-        <h1> Anime Discord Bot </h1>
-        <h2> Contributors: Erick Contreras, Vong Chen, Nurhaliza Hassan, Corey New, and William Ye </h2>
-        <p> Project Description - As to appeal to anime enthusiasts, the objective of this project is to create a Discord bot that provides anime-based utilities such as tracking and recommending show lists and displaying top current shows.
-        </p>
-        <h3> Commands </h3>
-        <div class="accordion">
-            <div class="content-box">
-                <div class="label"> Help </div>
-                <div class="content">
-                    <p>Details: Opens the help menu</p>
-                    <p>Usage: !help &lt;command&gt;</p>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Tab Title -->
+        <title> Anime Discord Bot </title>
+        <link rel="stylesheet" href="css/font-awesome.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <!-- Heading Area  -->
+        <div class="box-area">
+            <header>
+                <div class="wrapper">
+                    <div class="logo">
+                        <a href="#"> Anime Discord Bot </a>
+                    </div>
                 </div>
+            </header>
+            <!-- Banner Area  -->
+            <div class="banner-area">
+                <h2>  </h2>  
             </div>
-            <div class="content-box">
-                <div class="label"> Create List </div>
-                <div class="content">
-                    <p>Alias:  `createlist`, `Createlist`, `CreateList`</p>
-                    <p>Details: Creates a list in the database</p>
-                    <p>Usage: !createList</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Save List </div>
-                <div class="content">
-                    <p>Alias: `savelist`, `Savelist`, `SaveList`</p>
-                    <p>Details: Saves anime to list</p>
-                    <p>Usage: !saveList &lt;anime name&gt;</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Show List </div>
-                <div class="content">
-                    <p>Alias:  `showlist`, `Showlist`, `ShowList`</p>
-                    <p>Details: Shows your list</p>
-                    <p>Usage: !showList</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Delete Anime </div>
-                <div class="content">
-                    <p>Alias:  `delanime`, `Delanime`, `DelAnime`</p>
-                    <p>Details: Deletes an anime from list</p>
-                    <p>Usage: !delAnime &lt;anime name&gt;</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Delete List </div>
-                <div class="content">
-                    <p>Alias:  `deletelist`, `Deletelist`, `DeleteList`</p>
-                    <p>Details: Deletes list from database</p>
-                    <p>Usage: !deleteList</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Recommend </div>
-                <div class="content">
-                    <p>Alias:  `delanime`, `Delanime`, `DelAnime`</p>
-                    <p>Details: Deletes an anime from list</p>
-                    <p>Usage: !delAnime &lt;anime name&gt;</p>
-                </div>
-            </div>
-            <div class="content-box">
-                <div class="label"> Clear List </div>
-                <div class="content">
-                    <p>Alias:  `delanime`, `Delanime`, `DelAnime`</p>
-                    <p>Details: Deletes an anime from list</p>
-                    <p>Usage: !delAnime &lt;anime name&gt;</p>
-                </div>
+            <!-- Area Below Banner  -->
+            <div class="content-area">
+                <div class="wrapper">
+                    <br> <br>
+                    <div type="button">
+                        <a href="#" class="btn" onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=942280719655395369&permissions=534723951680&scope=bot');"> Invite Bot </a>
+                    </div>
+                    <h2> Mission Statement </h2>
+                    <p> As to appeal to anime enthusiasts, the objective of this project is to create a Discord 
+                        bot that provides anime-based utilities such as tracking and recommending show lists and 
+                        displaying top current shows. The need for this project is essential to Discord users who 
+                        hope to keep up with their shows, expand their show list by recommendations, and see what 
+                        new anime everyone else is watching. This project is beneficial to fans as it will propagate 
+                        the information they want to see and the data provided will allow for the user to figure out 
+                        what anime they want to see or keep up with. If this project does not get built, that will be a 
+                        missed opportunity for creating a Discord community unified by a common interest such as anime.
+                    </p>
+                    <h2> Commands </h2>
+                    <br>
+                      <!-- Toggle Menu  -->
+                    <div class="accordion">
+                        <div class="content-box">
+                            <div class="label"> Help </div>
+                            <div class="content">
+                                <p> A command that serves as a directory. All commands and details to run them are shown here.
+                                    It will also show who requested the command.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Create List </div>
+                            <div class="content">
+                                <p> A command that creates an ID for the user in the database, enabling the user to input their anime list.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Save List </div>
+                            <div class="content">
+                                <p> A command that allows for the user to input their list of anime.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Show List </div>
+                            <div class="content">
+                                <p> A command that shows the list of anime the user has inputted.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Delete Anime </div>
+                            <div class="content">
+                                <p> A command that allows the user to delete animes the user no longer wants in their list.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Delete List </div>
+                            <div class="content">
+                                <p> A command that allows for the user to delete the user's entire anime list.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Recommend </div>
+                            <div class="content">
+                                <p> A command that suggests the user other animes related to animes the user is interested in.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Clear List </div>
+                            <div class="content">
+                                <p> A command that allows the bot to delete the user's user ID from the database and remove the user's entire anime list.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Poll </div>
+                            <div class="content">
+                                <p> A command that enables the user to put their own questions and other users will be able to answer them.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Anime Search </div>
+                            <div class="content">
+                                <p> A command that shows the user they have searched and will prompt a photo and description of the anime.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Set Episode </div>
+                            <div class="content">
+                                <p> A command that sets the episodes the user is currently watching.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> All Ranking </div>
+                            <div class="content">
+                                <p> A command that shows the user the ranking based on myanimelist score.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="label"> Most Popular </div>
+                            <div class="content">
+                                <p> A command that shows the user the ranking based on myanimelist views and following.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <h2> Credits </h2>
+                    <p> Contributors: Vong Chen, Erick Contreras, Nurhaliza Hassan,
+                        Corey New, and William Ye <br> Logo: Vong Chen the Coffee Man 
+                        <br> Words of Wisdom from THE Vong Chen: "You need some coffee."
+                    </p>
             </div>
         </div>
-        <div class="button">
-            <button class="button b1" onclick="window.open('https://discord.com/api/oauth2/authorize?client_id=942280719655395369&permissions=534723951680&scope=bot');" >Invite Bot</button>
-        </div>
-    </div>
-</body>
+    </body>
+</html>
 <script src="index.js"></script>
