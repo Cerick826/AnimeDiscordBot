@@ -1,53 +1,176 @@
+/* --- fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,700;0,900;1,100;1,200;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 *{
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-.main{
-    width: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.5)50%, rgba(0,0,0,0.5)50%), url(logo.jpg);
-    background-position: center;
-    background-size: cover;
-    height: 109vh; 
+/* --- variables --- */
+/* background - gradient color palette */
+:root {
+    --imperial-red: #e63946;
+    --candy-pink: #e96a70;
+    --pastel-pink: #ec9a9a;
+    --spanish-pink: #edb2af;
+    --honeydew: #f1faee;
+    --powder-blue: #a8dadc;
+    --celadon-blue: #457b9d;
+    --bdazzeled-blue: #31587a;
+    --prussian-blue: #1d3557;
+    --white: #fff;
+    --white-alpha-40: rgba(255, 255, 255, 0.40);
+    --white-alpha-25: rgba(255, 255, 255, 0.25);
 }
 
-h1 {
-    text-align: center;
-    color: white;
-    padding: 70px;
-    font-size: 300%;
+/* --- global settings --- */
+html { 
+    font-size: 10px;
+    font-family: "Georgia", Arial, sans-serif;
 }
 
-h2 {
-    text-align: center;
-    color: white;
-    padding: 70px;
-    font-size: 300%;
+h1, h2 {
+    font-weight: 600;
 }
 
-ul {
-    display: table;
-    color: white;
-    padding: 70px;
+h3, h4, h5, h6 {
+    font-weight: 500;
 }
 
-h3 {
-    color: white;
+a {
+    text-decoration: none; /* removes lines from words on buttons */
 }
 
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: white;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    text-align: center;
 }
 
-.accordion {
-    max-width: 500px;
+.wrapper {
+    width: 1170px;
+    margin: 0 auto;
+}
+
+header {
+    height: 100px;
+    background: var(--bdazzeled-blue);
+    width: 100%;
+    z-index: 12;
+    position: fixed;
+}
+
+.logo {
+    width: 40%;
+    float: left;
+    line-height: 100px;
+}
+
+.logo a {
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 40px;
+    font-family: inherit;
+    color: #fff;
+    letter-spacing: 5px;
+    background-position: center;
+}
+
+.banner-area {
+    width: 100%;
+    height: 500px;
+    position: fixed;
+    top: 100px;
+    background-image: url(logo.jpg);
+    -webkit-background-size: cover;
+    background-size: cover;
+    background-position: center center;
+}
+
+.banner-area h2 {
+    padding-top: 8%;
+    font-size: 70px;
+    font-family: inherit;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.content-area {
+    width: 100%;
+    position: relative;
+    top: 550px;
+    background: var(--honeydew);
+    height: 3200px;
+}
+.content-area .btn {
+    margin: 0 15px 15px 0;
+}
+
+.content-area h2 {
+    font-family: inherit;
+    letter-spacing: 4px;
+    padding-top: 30px;
+    font-size: 40px;
+    margin: 0;
+}
+
+.content-area p {
+    padding: 2% 0;
+    font-family: inherit;
+    line-height: 30px;
+}
+
+/* --- discord button --- */
+button {
     text-align: center;
+    font-family: inherit;
+    user-select: none;
+}
+
+.btn {
+    line-height: 1.5;
+    background-color: var(--pastel-pink);
+    border: 1px solid var(--candy-pink);
+    padding: 10px 28px;
+    display: inline-block;
+    border-radius: 30px;
+    color: var(--imperial-red); /* changes color of word font */
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: capitalize;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+    vertical-align: middle;
+    transition: color 0.3s ease;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--imperial-red);
+    z-index: -1; 
+    transition: width 0.3s ease; /* button gradient */
+}
+
+.btn:hover::before {
+    width: 100%;
+}
+
+.btn:hover { 
+    color: var(--white); /* when button is touched - font changes white */
+}
+
+/* --- toggle menu --- */
+.accordion {
+    max-width: 1600px;
 }
 
 .accordion .content-box {
@@ -58,9 +181,10 @@ body {
 .accordion .content-box .label {
     position: relative;
     padding: 10px;
-    background: blue;
+    background: var(--imperial-red);
     color: white;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .accordion .content-box .label::before {
@@ -78,7 +202,7 @@ body {
 
 .accordion .content-box .content {
     position: relative;
-    background: black;
+    background: white;
     height: 0;
     overflow: hidden;
     transition: 0.5s;
@@ -86,29 +210,7 @@ body {
 }
 
 .accordion .content-box.active .content {
-    height: 150px;
+    height: 100px;
     padding: 10px;
-}
-
-p {
-    color: white;
-    padding: 70px;
-}
-
-.button {
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-}
-
-.b1 {
-    background-color: blue; 
-    color: white; 
-    border: 2px solid blue;
-}
-  
-.b1:hover {
-    background-color: white;
-    color: black;
+    
 }
