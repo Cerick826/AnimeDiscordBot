@@ -234,3 +234,77 @@ nav a{
  <div class="banner-area">
     <h2> ANIME DISCORD BOT </h2>
 </div>
+
+
+@keyframes zoomInOut {
+    0%, 100% {
+        transform: scale(0.5);
+    }
+    50% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceTop {
+    0%, 100% {
+        transform: translateY(-50px);
+    }
+    50% {
+        transform: translateY(0px);
+    }
+}
+
+/* --- background circles --- */
+.bg-circles {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    max-width: 1200px;
+    width: calc(100% - 30px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.bg-circles div {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.bg-circles .circle-1 {
+    height: 60px;
+    width: 60px;
+    background-color: var(--celadon-blue);
+    left: 5%;
+    top: 10%;
+    opacity: 0.3;
+    animation: zoomInOut 8s linear infinite;
+}
+
+.bg-circles .circle-2 {
+    height: 60px;
+    width: 60px;
+    background-color: var(--celadon-blue);
+    left: 5%;
+    top: 10%;
+    opacity: 0.3;
+    animation: bounceTop 8s ease-in-out infinite;
+}
+
+.bg-circles .circle-3 {
+    height: 120px;
+    width: 120px;
+    background-color: var(--celadon-blue);
+    top: 40%;
+    right: -60px;
+    opacity: 0.6;
+    animation: zoomInOut 8s linear infinite;
+}
+
+.bg-circles .circle-4 {
+    height: 50px;
+    width: 50px;
+    background-color: var(--celadon-blue);
+    left: -30px;
+    top: 80%;
+    opacity: 0.6;
+}
