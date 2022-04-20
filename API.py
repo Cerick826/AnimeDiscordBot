@@ -66,9 +66,7 @@ async def animeSearch(ctx, *, arg):
         color=0xF2D026,
     )
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    embed.set_thumbnail(
-        url=image.results[0].image_url
-    )
+    embed.set_thumbnail(url=image.results[0].image_url)
     await ctx.send(embed=embed)
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")

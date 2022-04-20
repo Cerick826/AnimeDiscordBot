@@ -27,9 +27,7 @@ cur = conn.cursor()
 error_obj = ExceptionHandle()
 # Global Embed for error handling format
 e_embed = discord.Embed(
-    title='**Command Error**',
-    description='',
-    color=discord.Color.red()
+    title="**Command Error**", description="", color=discord.Color.red()
 )
 
 @bot.event
@@ -301,7 +299,6 @@ async def createList(ctx):
         embed.add_field(name="Success!", value=f"New watchlist created!", inline=False)
         await ctx.send(embed=embed)
         conn.commit()
-
 
 
 @bot.command(
@@ -771,23 +768,37 @@ async def mostPopular(ctx):
 def check_command(ctx):
     return ctx.command.qualified_name
 
+
 @bot.event
 async def on_command_error(ctx, error):
     e_embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     if isinstance(error, commands.MissingRequiredArgument):
         if check_command(ctx) == "saveList":
-            e_embed.add_field(name="Incorrect Usage!", value="Use `!savelist <anime title>` to save an anime to your list")
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!savelist <anime title>` to save an anime to your list",
+            )
         if check_command(ctx) == "delAnime":
-            e_embed.add_field(name="Incorrect Usage!", value="Use `!delanime <anime title>` to delete an anime from your list")
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!delanime <anime title>` to delete an anime from your list",
+            )
         if check_command(ctx) == "poll":
-            e_embed.add_field(name="Incorrect Usage!", value="Use `!poll <anime #1> <anime #2>` to create a poll between two animes")
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!poll <anime #1> <anime #2>` to create a poll between two animes",
+            )
     elif isinstance(error, commands.CommandNotFound):
-        e_embed.add_field(name="Command not found!", value="Use `!help` for list of commands\n" +
-                                                           "Use `!help <command name>` for specific command details")
+        e_embed.add_field(
+            name="Command not found!",
+            value="Use `!help` for list of commands\n"
+            + "Use `!help <command name>` for specific command details",
+        )
     else:
         raise error
 
     await ctx.send(embed=e_embed)
     e_embed.clear_fields()
+
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
