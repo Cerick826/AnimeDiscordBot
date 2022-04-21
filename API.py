@@ -1,4 +1,6 @@
 import datetime
+from pydoc import synopsis
+from unittest import result
 import discord
 import asyncio
 import aiohttp
@@ -53,6 +55,7 @@ async def on_message(message):
             botON = True
     await bot.process_commands(message)
 
+
 @bot.command(
     name="animeSearch",
     aliases=["AnimeSearch", "animesearch", "Animesearch"],
@@ -61,12 +64,15 @@ async def on_message(message):
 async def animeSearch(ctx, *, arg):
     image = AnimeSearch(arg)
     embed = discord.Embed(
-        title="Anime Search",
-        description="Anime information",
+        title="Anime Search Result",
+        description=arg.upper(),
         color=0xF2D026,
     )
+    embed.add_field(name="Synopsis", value=image.results[0].synopsis)
+    embed.add_field(name="Episodes", value=image.results[0].episodes, inline=False)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed.set_thumbnail(url=image.results[0].image_url)
     await ctx.send(embed=embed)
+
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
