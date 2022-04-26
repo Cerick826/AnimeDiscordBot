@@ -91,6 +91,11 @@ async def menu(ctx):
     name="saveList", aliases=["savelist", "Savelist", "SaveList"], pass_context=True
 )
 async def saveList(ctx, *, arg):
+    endspace = arg.rfind(" ")
+    episode = arg[endspace + 1 :]
+    animename = arg[0:endspace]
+
+
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -104,31 +109,58 @@ async def saveList(ctx, *, arg):
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     # if user is present in database...enters if block to save to database
     if len(result) != 0:
-        if await check_format(mylist):
-            mylist = str(arg)
-        else:
-            mylist = mylist[2:-3]
-            mylist += ", " + str(arg)
-
-        if await check_ep_format(myeplist):
-            myeplist = "0"
-        else:
-            if myeplist[-2:] == ", ":
-                myeplist = myeplist[2:-3]
-                myeplist += "0"
+        if not(episode.isnumeric()):
+            if await check_format(mylist):
+                mylist = str(arg)
             else:
-                myeplist = myeplist[2:-3]
-                myeplist += ", 0"
+                mylist = mylist[2:-3]
+                mylist += ", " + str(arg)
 
-        cur.execute(
-            """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
-        )
-        cur.execute(
-            """UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id)
-        )
-        conn.commit()
-        embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
-        await ctx.send(embed=embed)
+            if await check_ep_format(myeplist):
+                myeplist = "0"
+            else:
+                if myeplist[-2:] == ", ":
+                    myeplist = myeplist[2:-3]
+                    myeplist += "0"
+                else:
+                    myeplist = myeplist[2:-3]
+                    myeplist += ", 0"
+
+            cur.execute(
+                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
+            )
+            cur.execute(
+                """UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id)
+            )
+            conn.commit()
+            embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
+            await ctx.send(embed=embed)
+        else:
+            if await check_format(mylist):
+                mylist = animename
+            else:
+                mylist = mylist[2:-3]
+                mylist += ", " + animename
+
+            if await check_ep_format(myeplist):
+                myeplist = episode
+            else:
+                if myeplist[-2:] == ", ":
+                    myeplist = myeplist[2:-3]
+                    myeplist += episode
+                else:
+                    myeplist = myeplist[2:-3]
+                    myeplist += ", " + episode
+
+            cur.execute(
+                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
+            )
+            cur.execute(
+                """UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id)
+            )
+            conn.commit()
+            embed.add_field(name="Success!", value=f"{animename} -- saved to list with episode {episode}", inline=False)
+            await ctx.send(embed=embed)
     else:
         await error_obj.no_list_error(ctx)
 
