@@ -62,29 +62,6 @@ async def on_message(message):
 
 
 # COMMANDS
-@bot.command(name="menu", aliases=["Menu"])
-async def menu(ctx):
-    await ctx.send(
-        "Menu",
-        components=[
-            [
-                Button(label="Help", style="2", emoji="0️⃣", custom_id="button0"),
-                Button(
-                    label="Create List", style="2", emoji="1️⃣", custom_id="button1"
-                ),
-                Button(label="Save List", style="2", emoji="2️⃣", custom_id="button2"),
-                Button(label="Show List", style="2", emoji="3️⃣", custom_id="button3"),
-                Button(
-                    label="Delete Anime", style="2", emoji="4️⃣", custom_id="button4"
-                )
-                # Button(label="Delete List", style="3", emoji = "5️⃣", custom_id="button5")
-            ]
-        ],
-    )
-    interaction = await bot.wait_for(
-        "button_click", check=lambda i: i.custom_id == "button0"
-    )
-    await interaction.send(content="Button clicked!", ephemeral=False)
 
 
 @bot.command(
@@ -189,7 +166,6 @@ async def delAnime(ctx, *, arg):
         await error_obj.missing_anime_error(ctx)
 
     else:
-
         myeplist = myeplist[2:-3]
         counter = 0
         for anime in mylist.split(","):
@@ -549,7 +525,7 @@ async def help(ctx, *, arg=None):
     )
     embed.add_field(
         name="Commands:",
-        value=" `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `recommend`, `clearList`",
+        value=" `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `setEp`, `animePic`, `animeSearch`, `relAnime`, `mostPopular`, `allRanking`, `poll`, `clearList`",
     )
     embed.add_field(name="Details:", value="`!help <command>`", inline=False)
     await ctx.send(embed=embed)
@@ -630,7 +606,7 @@ async def setEp(ctx, *, arg):
         await error_obj.missing_anime_error(ctx)
 
     else:
-
+    
         myeplist = myeplist[2:-3]
         counter = 0
         for anime in mylist.split(","):

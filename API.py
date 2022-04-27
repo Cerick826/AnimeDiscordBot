@@ -1,11 +1,14 @@
+from ast import alias
 import datetime
 from pydoc import synopsis
 from unittest import result
 import discord
 import asyncio
 import aiohttp
+import random
 import mysql.connector
-from mal import *
+import mal
+from animec  import *
 from discord import Embed
 from operator import truediv
 from discord_components import *
@@ -62,16 +65,39 @@ async def on_message(message):
     pass_context=True,
 )
 async def animeSearch(ctx, *, arg):
-    image = AnimeSearch(arg)
+    image = mal.AnimeSearch(arg)
     embed = discord.Embed(
         title="Anime Search Result",
-        description=arg.upper(),
+        description=image.results[0].title,
         color=0xF2D026,
     )
     embed.add_field(name="Synopsis", value=image.results[0].synopsis)
     embed.add_field(name="Episodes", value=image.results[0].episodes, inline=False)
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed.set_thumbnail(url=image.results[0].image_url)
+    await ctx.send(embed=embed)
+
+@bot.command(
+    name="relAnime",
+    aliases=["RelAnime", "relanime", "Re;anime"],
+    pass_context=True,
+)
+async def relAnime(ctx, *, arg):
+    animeTitle = mal.AnimeSearch(arg)
+    animeTitleID = animeTitle.results[0].mal_id
+    related = mal.Anime(animeTitleID).related_anime
+
+    embed = discord.Embed(
+        title="Affiliated Work Relating to this Anime",
+        description=animeTitle.results[0].title,
+        color=0x87aea6,
+    )
+    for key, val in related.items():
+        val1 = str(val)[1:-1]
+        embed.add_field(name=key, value=val1)
+        
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    embed.set_thumbnail(url=animeTitle.results[0].image_url)
     await ctx.send(embed=embed)
 
 
