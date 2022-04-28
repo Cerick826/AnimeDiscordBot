@@ -118,11 +118,12 @@ class EmbedHelp:
         )
         self.embedHelp.add_field(
             name="Commands:",
-            value=" `createList`, `saveList`, `showList`, `delAnime`, `deleteList`," + 
-                    "`recommend`, `clearList`, `poll`, `setEp`, `animePic`, `setEp`," +
-                    "`allRanking`, `mostPopular`"
+            value="> `createList` `saveList`    `showList`     `deleteList` `delAnime`\n > \n" + 
+                  "> `allRanking` `mostPopular` `animeSearch`  `relAnime` \n > \n" + 
+                  "> `recommend`  `poll`        `animePic`     `setEp`"
+                  
         )
-        self.embedHelp.add_field(name="View Command Details:", value="`!help <command>`", inline=False)
+        self.embedHelp.add_field(name="View Command Details:", value="> `!help <command>`", inline=False)
         await ctx.send(embed=self.embedHelp)
         self.embedHelp.clear_fields()
 
