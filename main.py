@@ -507,7 +507,7 @@ async def animePic(ctx):
 @bot.command(name="setEp", aliases=["setep"], pass_context=True)
 async def setEp(ctx, *, arg):
     endspace = arg.rfind(" ")
-    episode = arg[endspace + 1 :]
+    episode = arg[endspace + 1:]
     animename = arg[0:endspace]
 
     my_id = str(ctx.message.author.id)
