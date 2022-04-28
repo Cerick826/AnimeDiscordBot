@@ -26,7 +26,10 @@ conn = mysql.connector.connect(
     database="sql3474170",
 )
 cur = conn.cursor()
-
+# global exception handling embed
+e_embed = discord.Embed(
+    title="**Command Error**", description="", color=discord.Color.red()
+)
 
 @bot.event
 async def on_ready():
@@ -99,6 +102,58 @@ async def relAnime(ctx, *, arg):
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed.set_thumbnail(url=animeTitle.results[0].image_url)
     await ctx.send(embed=embed)
+
+@bot.check
+def check_command(ctx):
+    return ctx.command.qualified_name
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    e_embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    if isinstance(error, commands.MissingRequiredArgument):
+        if check_command(ctx) == "saveList":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!savelist <anime title>` to save an anime to your list",
+            )
+        if check_command(ctx) == "delAnime":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!delanime <anime title>` to delete an anime from your list",
+            )
+        if check_command(ctx) == "poll":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!poll <anime 1> <anime 2> <question>` to create a poll between two animes",
+            )
+        if check_command(ctx) == "setEp":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!setEp <anime from list> <episode number>`",
+            )
+        if check_command(ctx) == "animeSearch":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!animesearch <anime title>`",
+            )
+        if check_command(ctx) == "relAnime":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!relanime <anime title>`",
+            )
+    elif isinstance(error, commands.CommandNotFound):
+        e_embed.add_field(
+            name="Command not found!",
+            value="Use `!help` for list of commands\n"
+            + "Use `!help <command name>` for specific command details",
+        )
+    else:
+        raise error
+
+    await ctx.send(embed=e_embed)
+    e_embed.clear_fields()
+
 
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
