@@ -1,6 +1,7 @@
 # CPSC362-Group-Project
 
 ## GROUP MEMBERS:
+* Mark Carbajal 
 * Vong Chen 
 * Erick Contreras
 * Nurhaliza Hassan
