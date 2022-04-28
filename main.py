@@ -10,6 +10,7 @@ from discord.ext import commands
 from click import CommandCollection
 from utils import sortWatchList, check_format, check_ep_format
 from exceptions import ExceptionHandle
+from embedhelp import EmbedHelp
 
 
 bot = commands.Bot(command_prefix="!", help_command=None)
@@ -23,6 +24,8 @@ conn = mysql.connector.connect(
 )
 cur = conn.cursor()
 
+# global EmbedHelp object
+embed_help = EmbedHelp()
 # global ExceptionHandle object
 error_obj = ExceptionHandle()
 # Global Embed for error handling format
@@ -419,149 +422,39 @@ async def deleteList(ctx):
 @bot.command(name="help", aliases=["Help"], pass_context=True)
 async def help(ctx, *, arg=None):
     if (
-        arg == "createList"
-        or arg == "createlist"
-        or arg == "Createlist"
-        or arg == "CreateList"
+        arg == "createList" or arg == "createlist" or arg == "Createlist" or arg == "CreateList" 
     ):
-        # await ctx.send("createList Usage: !createList")
-        embedcreateList = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embedcreateList.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embedcreateList.add_field(
-            name="Command: createList",
-            value="Alias:  `createlist`, `Createlist`, `CreateList`",
-        )
-        embedcreateList.add_field(
-            name="Details:", value="`Creates a list in the database`", inline=False
-        )
-        embedcreateList.add_field(name="Usage:", value="`!createList`", inline=False)
-        await ctx.send(embed=embedcreateList)
+        await embed_help.embedCreateList(ctx)
         return
 
     elif (
         arg == "saveList" or arg == "savelist" or arg == "Savelist" or arg == "SaveList"
-    ):
-        # await ctx.send("saveList Usage: !saveList <anime name>")
-        embedsaveList = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embedsaveList.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embedsaveList.add_field(
-            name="Command: saveList", value="Alias:  `savelist`, `Savelist`, `SaveList`"
-        )
-        embedsaveList.add_field(
-            name="Details:", value="`Saves anime to list`", inline=False
-        )
-        embedsaveList.add_field(
-            name="Usage:", value="`!saveList <anime name>`", inline=False
-        )
-        await ctx.send(embed=embedsaveList)
+    ):        
+        await embed_help.embedSaveList(ctx)
         return
 
     elif (
         arg == "showList" or arg == "showlist" or arg == "Showlist" or arg == "ShowList"
-    ):
-        # await ctx.send("showList Usage: !showList")
-        embedshowList = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embedshowList.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embedshowList.add_field(
-            name="Command: showList", value="Alias:  `showlist`, `Showlist`, `ShowList`"
-        )
-        embedshowList.add_field(
-            name="Details:", value="`Shows your list`", inline=False
-        )
-        embedshowList.add_field(name="Usage:", value="`!showList`", inline=False)
-        await ctx.send(embed=embedshowList)
+    ):      
+        await embed_help.embedShowList(ctx)
         return
 
     elif (
         arg == "delAnime" or arg == "delanime" or arg == "Delanime" or arg == "DelAnime"
-    ):
-        # await ctx.send("delAnime Usage: !delAnime <anime name>")
-        embeddelAnime = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embeddelAnime.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embeddelAnime.add_field(
-            name="Command: delAnime", value="Alias:  `delanime`, `Delanime`, `DelAnime`"
-        )
-        embeddelAnime.add_field(
-            name="Details:", value="`Deletes an anime from list`", inline=False
-        )
-        embeddelAnime.add_field(
-            name="Usage:", value="`!delAnime <anime name>`", inline=False
-        )
-        await ctx.send(embed=embeddelAnime)
+    ):     
+        await embed_help.embedDelAnime(ctx)
         return
 
     elif (
-        arg == "deleteList"
-        or arg == "deletelist"
-        or arg == "Deletelist"
-        or arg == "DeleteList"
-    ):
-        # await ctx.send("deleteList Usage: !deleteList")
-        embeddeleteList = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embeddeleteList.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embeddeleteList.add_field(
-            name="Command: deleteList",
-            value="Alias:  `deletelist`, `Deletelist`, `DeleteList`",
-        )
-        embeddeleteList.add_field(
-            name="Details:", value="`Deletes list from database`", inline=False
-        )
-        embeddeleteList.add_field(name="Usage:", value="`!deleteList`", inline=False)
-        await ctx.send(embed=embeddeleteList)
+        arg == "deleteList" or arg == "deletelist" or arg == "Deletelist" or arg == "DeleteList"
+    ):      
+        await embed_help.embedDeleteList(ctx)
         return
 
     elif arg == "poll" or arg == "Poll":
-        embedpoll = discord.Embed(
-            title="**Help Menu**", description="", color=discord.Color.blue()
-        )
-        embedpoll.set_footer(
-            text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-        )
-        embedpoll.add_field(name="Command: poll", value="Alias:  `Poll`")
-        embedpoll.add_field(
-            name="Details:", value="`Creates a poll for users to vote on`", inline=False
-        )
-        embedpoll.add_field(
-            name="Usage:", value="`!poll <choice1> <choice2> <question>`", inline=False
-        )
-        await ctx.send(embed=embedpoll)
+        
+        await embed_help.embedPoll(ctx)
         return
-
-    embed = discord.Embed(
-        title="**Help Menu**",
-        description="Use any of the following commands:",
-        color=discord.Color.blue(),
-    )
-    embed.set_footer(
-        text=f"Requested by - {ctx.author}", icon_url=ctx.author.avatar_url
-    )
-    embed.add_field(
-        name="Commands:",
-        value=" `createList`, `saveList`, `showList`, `delAnime`, `deleteList`, `setEp`, `animePic`, `animeSearch`, `relAnime`, `mostPopular`, `allRanking`, `poll`, `clearList`",
-    )
-    embed.add_field(name="Details:", value="`!help <command>`", inline=False)
-    await ctx.send(embed=embed)
-
 
 @bot.command(name="poll", aliases=["Poll"], pass_context=True)
 async def poll(ctx, choice1, choice2, *, question):
@@ -794,7 +687,7 @@ async def on_command_error(ctx, error):
         if check_command(ctx) == "poll":
             e_embed.add_field(
                 name="Incorrect Usage!",
-                value="Use `!poll <anime #1> <anime #2>` to create a poll between two animes",
+                value="Use `!poll <anime 1> <anime 2> <question>` to create a poll between two animes",
             )
     elif isinstance(error, commands.CommandNotFound):
         e_embed.add_field(
