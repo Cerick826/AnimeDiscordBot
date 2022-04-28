@@ -456,6 +456,10 @@ async def help(ctx, *, arg=None):
         await embed_help.embedPoll(ctx)
         return
 
+    else:
+        await embed_help.embedOverall(ctx)
+        return
+
 @bot.command(name="poll", aliases=["Poll"], pass_context=True)
 async def poll(ctx, choice1, choice2, *, question):
     embed = discord.Embed(
@@ -688,6 +692,11 @@ async def on_command_error(ctx, error):
             e_embed.add_field(
                 name="Incorrect Usage!",
                 value="Use `!poll <anime 1> <anime 2> <question>` to create a poll between two animes",
+            )
+        if check_command(ctx) == "setEp":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!setEp <anime from list> <episode number>`",
             )
     elif isinstance(error, commands.CommandNotFound):
         e_embed.add_field(
