@@ -11,6 +11,7 @@ from click import CommandCollection
 from utils import sortWatchList, check_format, check_ep_format
 from exceptions import ExceptionHandle
 from embedhelp import EmbedHelp
+import random
 
 
 bot = commands.Bot(command_prefix="!", help_command=None)
@@ -495,15 +496,17 @@ async def poll(ctx, choice1, choice2, *, question):
     await newmessage.edit(embed=embed2)
 
 
-@bot.command(name="animePic", aliases=["animepic"], pass_context=True)
-async def animePic(ctx):
+@bot.command(name="animeMeme", aliases=["animememe", "Animememe"], pass_context=True)
+async def animeMeme(ctx):
     async with ctx.channel.typing():
-        async with aiohttp.ClientSession() as cs:
-            async with cs.get("https://aws.random.cat/meow") as r:
-                data = await r.json()
+        async with aiohttp.ClientSession() as cd:
+            async with cd.get("https://reddit.com/r/animememes.json") as r:
+                meme = await r.json()
 
-                embed = discord.Embed(title="Picture")
-                embed.set_image(url=data["file"])
+                embed = discord.Embed(title="Picture", color=discord.Colour.purple())
+                embed.set_image(
+                    url=meme["data"]["children"][random.randint(0, 30)]["data"]["url"]
+                )
 
                 await ctx.send(embed=embed)
 
@@ -511,7 +514,7 @@ async def animePic(ctx):
 @bot.command(name="setEp", aliases=["setep"], pass_context=True)
 async def setEp(ctx, *, arg):
     endspace = arg.rfind(" ")
-    episode = arg[endspace + 1 :]
+    episode = arg[endspace + 1:]
     animename = arg[0:endspace]
 
     my_id = str(ctx.message.author.id)
