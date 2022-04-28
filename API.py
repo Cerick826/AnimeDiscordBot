@@ -1,6 +1,7 @@
 from ast import alias
 import datetime
 from pydoc import synopsis
+from turtle import color
 from unittest import result
 import discord
 import asyncio
@@ -8,12 +9,12 @@ import aiohttp
 import random
 import mysql.connector
 import mal
-from animec  import *
+import animec
 from discord import Embed
 from operator import truediv
 from discord_components import *
 from discord.ext import commands
-from click import CommandCollection
+from click import CommandCollection, pass_context
 from utils import sortWatchList, check_format, check_ep_format
 
 bot = commands.Bot(command_prefix="!", help_command=None)
@@ -77,6 +78,7 @@ async def animeSearch(ctx, *, arg):
     embed.set_thumbnail(url=image.results[0].image_url)
     await ctx.send(embed=embed)
 
+
 @bot.command(
     name="relAnime",
     aliases=["RelAnime", "relanime", "Re;anime"],
@@ -90,15 +92,41 @@ async def relAnime(ctx, *, arg):
     embed = discord.Embed(
         title="Affiliated Work Relating to this Anime",
         description=animeTitle.results[0].title,
-        color=0x87aea6,
+        color=0x87AEA6,
     )
     for key, val in related.items():
         val1 = str(val)[1:-1]
         embed.add_field(name=key, value=val1)
-        
+
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed.set_thumbnail(url=animeTitle.results[0].image_url)
     await ctx.send(embed=embed)
+
+
+@bot.command(
+    name="animeNews", aliases=["animenews", "Animenews", "AnimeNews"], pass_context=True
+)
+async def animeNews(ctx, amount: int = 3):
+    async with ctx.channel.typing():
+        news = animec.Aninews(amount)
+        links = news.links
+        titles = news.titles
+        description = news.description
+
+        animeNews = discord.Embed(
+            title="Latest Anime News",
+            color=discord.Colour.purple(),
+            timestamp=datetime.datetime.utcnow(),
+        )
+        animeNews.set_thumbnail(url=news.images[0])
+
+        for i in range(amount):
+            animeNews.add_field(
+                name=f"{i+1}) {titles[i]}",
+                value=f"{description[i][:200]}...\n[Read More]({links[i]})",
+                inline=False,
+            )
+        await ctx.send(embed=animeNews)
 
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
