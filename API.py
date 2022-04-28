@@ -177,5 +177,37 @@ async def animeNews(ctx, amount: int = 3):
             )
         await ctx.send(embed=animeNews)
 
+@bot.command(
+    name="mangaSearch",
+    aliases=["MangaSearch", "mangasearch", "Mangasearch"],
+    pass_context=True,
+)
+async def mangaSearch(ctx, *, arg):
+    mangaName = mal.MangaSearch(arg)
+    mangaNameID = mangaName.results[0].mal_id
+    image = mal.MangaSearch(arg)
+    japanese = mal.Manga(mangaNameID).title_japanese
+    themes = mal.Manga(mangaNameID).themes
+    genre = mal.Manga(mangaNameID).genres
+    
+    image = mal.MangaSearch(arg)
+    embed = discord.Embed(
+        title="Manga Search Result",
+        url= image.results[0].url,
+        description=image.results[0].title,
+        color=0x5d7faf,
+    )
+    embed.add_field(name="Japanese title",value=f"{japanese}",inline=False)
+    embed.add_field(name="Synopsis",value=image.results[0].synopsis,inline=False)
+    embed.add_field(name="Volumes", value=image.results[0].volumes, inline=False)
+    embed.add_field(name="Genres",value=f"{genre}",inline=False)
+    embed.add_field(name="Themes",value=f"{themes}")
+    embed.add_field(name="Type", value=image.results[0].type)
+    embed.add_field(name="Score", value=image.results[0].score)
+    embed.add_field(name="URL", value=image.results[0].url)
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+    embed.set_thumbnail(url=image.results[0].image_url)
+    await ctx.send(embed=embed)
+
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
