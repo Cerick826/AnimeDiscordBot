@@ -6,7 +6,6 @@ from discord.ext import commands, tasks
 from discord.voice_client import VoiceClient
 import youtube_dl
 import pafy
-
 from random import choice
 
 youtube_dl.utils.bug_reports_message = lambda: ""
@@ -72,20 +71,8 @@ async def on_ready():
     print("Bot is online!")
 
 
-@bot.command(name="join", aliases=["Join"])
-async def join(ctx):
-    if not ctx.message.author.voice:
-        await ctx.send("You are not connected to a voice channel")
-        return
-
-    else:
-        channel = ctx.message.author.voice.channel
-
-    await channel.connect()
-
-
-@bot.command(name="leave", aliases=["Leave"])
-async def leave(ctx):
+@bot.command(name="stop", aliases=["Stop"])
+async def stop(ctx):
     voice_client = ctx.message.guild.voice_client
     await voice_client.disconnect()
 
@@ -175,14 +162,6 @@ async def resume(ctx):
     voice_channel.resume()
 
 
-@bot.command(name="stop", aliases=["Stop"], pass_context=True)
-async def stop(ctx):
-    server = ctx.message.guild
-    voice_channel = server.voice_client
-
-    voice_channel.stop()
-
-
 @bot.command(name="queue", aliases=["Queue", "add", "Add"], pass_context=True)
 async def queue_(ctx, *, url):
     global queue
@@ -247,8 +226,8 @@ async def skip(ctx):
         if reaction.emoji in ["\u2705", "\U0001F6AB"]:
             async for user in reaction.users():
                 if (
-                    user.voice.channel.id == ctx.voice_client.channel.id
-                    and user.id not in reacted
+                    # user.voice.channel.id == ctx.voice_client.channel.id
+                    user.id not in reacted
                     and not user.bot
                 ):
                     votes[reaction.emoji] += 1
