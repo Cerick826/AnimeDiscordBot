@@ -3,6 +3,28 @@ async def sortWatchList(wString):
     result = delim.join(sorted(wString.split(", ")))
     return result
 
+async def sortWatchListEp(list, sortedlist, eplist):
+    counter = 0
+    result = ""
+    for i in sortedlist.split(","):
+        for j in list.split(","):
+            if i in j or j in i:
+                counter1 = 0
+                for k in eplist.split(","):
+                    if counter == counter1:
+                        ep = ''.join([x for x in k if x.isdigit()])
+                        delim = ", "
+                        result1 = ep + delim
+                        result += result1
+                        break
+                    counter1 += 1
+                break
+            counter += 1
+        counter = 0
+    
+    return result
+            
+
 
 # function to check special characters from database
 

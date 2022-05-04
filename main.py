@@ -8,7 +8,7 @@ from operator import truediv
 from discord_components import *
 from discord.ext import commands
 from click import CommandCollection
-from utils import sortWatchList, check_format, check_ep_format
+from utils import sortWatchList, sortWatchListEp, check_format, check_ep_format
 from exceptions import ExceptionHandle
 from embedhelp import EmbedHelp
 import random
@@ -154,8 +154,13 @@ async def showList(ctx):
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
     mylist = " ".join(map(str, result))
+
+    cur.execute(f"SELECT ep FROM watchlist WHERE user_id = {my_id}")
+    epresult = cur.fetchall()
+    myeplist = " ".join(map(str, epresult))
+
     embed = discord.Embed(
-        title="Anime list", description="My saved animes: ", color=0x14EBC0
+        title="Anime list", description="My saved animes with episodes: ", color=0x14EBC0
     )
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
 
@@ -169,11 +174,18 @@ async def showList(ctx):
 
     elif len(mylist) > 5:
         mylist = mylist[2:-3]
-        mylist = await sortWatchList(mylist)
-        counter = 1
-        for anime in mylist.split(","):
-            embed.add_field(name=f"{counter}", value=f"{anime}", inline=True)
+        sortedmylist = await sortWatchList(mylist)
+        myeplist = await sortWatchListEp(mylist, sortedmylist, myeplist)
+        counter = 0
+        for anime in sortedmylist.split(","):
+            counter1 = 0
+            for ep in myeplist.split(","):
+                if counter == counter1:
+                    embed.add_field(name=f"{anime}", value=f"{ep}", inline=True)
+                    break
+                counter1 += 1
             counter += 1
+        
         await ctx.send(embed=embed)
 
 
@@ -211,12 +223,17 @@ async def delAnime(ctx, *, arg):
                 break
             if anime == (" " + str(arg) + "'"):
                 break
+            if anime == ("('" + str(arg) + "'"):
+                counter = -2
+                break
             if anime == ")":
                 counter = -1
                 break
             counter += 1
         if not counter == -1:
-            if counter == 0:
+            if counter == -2:
+                myeplist = ""
+            elif counter == 0:
                 first = myeplist.find(",")
                 aft = myeplist[first + 2 :]
                 myeplist = aft
@@ -243,7 +260,9 @@ async def delAnime(ctx, *, arg):
             myeplist = myeplist.replace(", ,", ",")
 
             mylist = mylist[2:-3]
-            if counter == 0:
+            if counter == -2:
+                mylist = ""
+            elif counter == 0:
                 first = mylist.find(",")
                 aft = mylist[first + 2 :]
                 mylist = aft
@@ -285,9 +304,8 @@ async def delAnime(ctx, *, arg):
                 name="Success!", value=f"{arg} deleted from anime list!", inline=False
             )
             await ctx.send(embed=embed)
-
         else:
-            error_obj.missing_anime_error(ctx)
+            await error_obj.missing_anime_error(ctx)
 
 
 @bot.command(
