@@ -194,6 +194,11 @@ async def on_command_error(ctx, error):
                 name="Incorrect Usage!",
                 value="Use `!relanime <anime title>`",
             )
+        if check_command(ctx) == "mangaSearch":
+            e_embed.add_field(
+                name="Incorrect Usage!",
+                value="Use `!mangasearch <anime title>` to view anime details",
+            )
     elif isinstance(error, commands.CommandNotFound):
         e_embed.add_field(
             name="Command not found!",
