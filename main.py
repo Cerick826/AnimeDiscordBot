@@ -97,15 +97,21 @@ async def saveList(ctx, *, arg):
                 mylist = mylist[2:-3]
                 mylist += ", " + str(arg)
 
-            if await check_ep_format(myeplist):
-                myeplist = "0"
-            else:
-                if myeplist[-2:] == ", ":
-                    myeplist = myeplist[2:-3]
-                    myeplist += "0"
+            counter = 0
+            for anime in mylist.split(","):
+                if counter == 0:
+                    if await check_ep_format(myeplist):
+                        myeplist = "0"
+                    else:
+                        if myeplist[-2:] == ", ":
+                            myeplist = myeplist[2:-3]
+                            myeplist += "0"
+                        else:
+                            myeplist = myeplist[2:-3]
+                            myeplist += ", 0"
                 else:
-                    myeplist = myeplist[2:-3]
                     myeplist += ", 0"
+                counter += 1
 
             cur.execute(
                 """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
