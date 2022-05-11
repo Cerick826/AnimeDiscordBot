@@ -7,6 +7,14 @@
         <title> Anime Discord Bot </title>
         <link rel="stylesheet" href="css/font-awesome.css">
         <link rel="stylesheet" href="style.css">
+        <link href='https://api.mapbox.com/mapbox-gl-js/v2.8.0/mapbox-gl.css' rel='stylesheet' />
+        <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css" type="text/css">	
+        <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+
+        
+        <script src='https://api.mapbox.com/mapbox-gl-js/v2.8.0/mapbox-gl.js'></script>
+        <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+        <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
     </head>
     <body>
         <!-- Heading Area  -->
@@ -136,10 +144,16 @@
                             </div>
                         </div>
                     </div>
+
+                    <h2> Flushy Mapbox </h2>
+                    <p> Please allow the website to know your location in order for Mapbox to load. </p>
+                    <div id="geocoder"></div>
+                    <div id='map'></div>
+
                     <h2> Credits </h2>
                     <p> Contributors: Vong Chen, Erick Contreras, Nurhaliza Hassan,
                         Corey New, and William Ye <br> Logo: Vong Chen the Coffee Man 
-                        <br> Words of Wisdom from THE Vong Chen: "You need some coffee."
+                        <br> Mapbox: Flushy Group 7 <br> Words of Wisdom from THE Vong Chen: "You need some coffee."
                     </p>
             </div>
         </div>

@@ -214,3 +214,38 @@ button {
     padding: 10px;
     
 }
+
+#map {
+    height: 45vh;
+    width: 100w;
+}
+
+.marker {
+    background-image: url('images/Flushy-Marker.png');
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.mapboxgl-popup {
+    max-width: 200px;
+}
+
+.mapboxgl-popup-content {
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
+#geocoder {
+        margin-bottom: 25px;
+        position: relative;
+        top: 10px;
+        left: 600px;
+        width: 600w;
+    }
+
+.mapboxgl-ctrl-geocoder {
+    min-width: 100%;
+    }
