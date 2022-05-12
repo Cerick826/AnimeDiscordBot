@@ -28,11 +28,11 @@ load_dotenv()
 bot = commands.Bot(command_prefix="!", help_command=None)
 bot.remove_command("help")
 conn = mysql.connector.connect(
-    host="sql3.freesqldatabase.com",
-    port=3306,
-    user="sql3474170",
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT"),
+    user=os.getenv("DB_USER"),
     passwd=os.getenv("DB_PASS"),
-    database="sql3474170",
+    database=os.getenv("DB_DB"),
 )
 cur = conn.cursor()
 
