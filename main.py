@@ -21,6 +21,9 @@ import pafy
 from ast import alias
 from click import pass_context
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 bot = commands.Bot(command_prefix="!", help_command=None)
 bot.remove_command("help")
@@ -996,31 +999,46 @@ async def animeNews(ctx, amount: int = 3):
     pass_context=True,
 )
 async def mangaSearch(ctx, *, arg):
-    mangaName = mal.MangaSearch(arg)
-    mangaNameID = mangaName.results[0].mal_id
-    image = mal.MangaSearch(arg)
-    japanese = mal.Manga(mangaNameID).title_japanese
-    themes = mal.Manga(mangaNameID).themes
-    genre = mal.Manga(mangaNameID).genres
-
-    image = mal.MangaSearch(arg)
-    embed = discord.Embed(
-        title="Manga Search Result",
-        url=image.results[0].url,
-        description=image.results[0].title,
-        color=0x5D7FAF,
-    )
-    embed.add_field(name="Japanese title", value=f"{japanese}", inline=False)
-    embed.add_field(name="Synopsis", value=image.results[0].synopsis, inline=False)
-    embed.add_field(name="Volumes", value=image.results[0].volumes, inline=False)
-    embed.add_field(name="Genres", value=f"{genre}", inline=False)
-    embed.add_field(name="Themes", value=f"{themes}")
-    embed.add_field(name="Type", value=image.results[0].type)
-    embed.add_field(name="Score", value=image.results[0].score)
-    embed.add_field(name="URL", value=image.results[0].url)
-    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-    embed.set_thumbnail(url=image.results[0].image_url)
-    await ctx.send(embed=embed)
+    async with ctx.channel.typing():
+        image = mal.MangaSearch(arg)
+        mal_id = image.results[0].mal_id
+        manga = mal.Manga(mal_id)
+        genres = str(manga.genres)[1:-1]
+        genres = genres.replace('\'', '')
+        themes = str(manga.themes)[1:-1]
+        themes = themes.replace('\'', '')
+        synopsisM = manga.synopsis[:1015]
+        nameList = ""
+        roleList = ""
+        background = manga.background
+        background = background.split("More Videos")
+        embed = discord.Embed(
+            title=image.results[0].title,
+            url=manga.url,
+            color=0xF2D026,
+        )
+        embed.add_field(name="***Titles***",
+                        value=f"**🇺🇸English title: ** {manga.title_english}\n"
+                            f"**🇯🇵Japanese title: ** {manga.title_japanese}\n")
+        embed.add_field(name="***Statistics***",
+                        value=f"**💯Score: ** `{manga.score}`\n"
+                            f"**✌️Scored by: ** `{manga.scored_by}` users\n"
+                            f"**♚Ranked: ** `{manga.rank}`\n"
+                            f"**✨Popularity: ** `{manga.popularity}`\n"
+                            f"**🕴️Members: ** `{manga.members}`\n"
+                            f"**💖Favorites: ** `{manga.favorites}`\t", inline=True)
+        embed.add_field(name="***Information***",
+                        value=f"**🎥 Type: ** {manga.type}\t\t"
+                            f"**💨Status: ** {manga.status}\n"
+                            f"**➤Genres: ** {genres}\t\t"
+                            f"**➤Themes: ** {themes}\n")
+        embed.add_field(name="Synopsis", value=f"```{synopsisM}...```", inline=False)
+        embed.add_field(name="***Staff***", value="List of staff", inline=False)
+        embed.add_field(name="Background", value=f"```{background[0]}```", inline=False)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_thumbnail(url=image.results[0].image_url)
+        embed.set_footer(text="Source: MyAnimeList")
+        await ctx.send(embed=embed)
 
 
 ## start of song.py
@@ -1279,4 +1297,4 @@ async def change_status():
     await bot.change_presence(activity=discord.Game(choice(status)))
 
 
-bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
+bot.run(os.getenv("DISCORD_TOKEN"))
