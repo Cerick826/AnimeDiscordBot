@@ -31,7 +31,7 @@ conn = mysql.connector.connect(
     host="sql3.freesqldatabase.com",
     port=3306,
     user="sql3474170",
-    passwd="jmkGZaymNS",
+    passwd=os.getenv("DB_PASS"),
     database="sql3474170",
 )
 cur = conn.cursor()
