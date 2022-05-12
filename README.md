@@ -31,6 +31,9 @@
 	* Iteration 4 (Week 13-15): Display Top Anime Rankings
 	* Iteration 5 (Week 16-17): Recommendation List
 
+## CONTRIBUTION
+* To launch the bot, create a .env file in the same directory as main.py and make a DISCORD_TOKEN variable and put your discord bot token there.
+
 
 Create list of commands for the user (display with -help)
 
