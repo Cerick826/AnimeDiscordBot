@@ -6,14 +6,20 @@ import mysql.connector
 from discord import Embed
 from operator import truediv
 from discord_components import *
-from discord.ext import commands
+from discord.ext import commands, tasks
 from click import CommandCollection
 from utils import sortWatchList, sortWatchListEp, check_format, check_ep_format
 from exceptions import ExceptionHandle
 from embedhelp import EmbedHelp
 import random
+from random import choice
 import mal
 import animec
+from discord.voice_client import VoiceClient
+import youtube_dl
+import pafy
+from ast import alias
+from click import pass_context
 
 
 bot = commands.Bot(command_prefix="!", help_command=None)
@@ -35,6 +41,7 @@ error_obj = ExceptionHandle()
 e_embed = discord.Embed(
     title="**Command Error**", description="", color=discord.Color.red()
 )
+
 
 @bot.event
 async def on_ready():
@@ -78,7 +85,6 @@ async def saveList(ctx, *, arg):
     episode = arg[endspace + 1 :]
     animename = arg[0:endspace]
 
-
     my_id = str(ctx.message.author.id)
     cur.execute(f"SELECT animelist FROM watchlist WHERE user_id = {my_id}")
     result = cur.fetchall()
@@ -92,7 +98,7 @@ async def saveList(ctx, *, arg):
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     # if user is present in database...enters if block to save to database
     if len(result) != 0:
-        if not(episode.isnumeric()):
+        if not (episode.isnumeric()):
             if await check_format(mylist):
                 mylist = str(arg)
             else:
@@ -116,13 +122,16 @@ async def saveList(ctx, *, arg):
                 counter += 1
 
             cur.execute(
-                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
+                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""",
+                (mylist, my_id),
             )
             cur.execute(
                 """UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id)
             )
             conn.commit()
-            embed.add_field(name="Success!", value=f"{arg} -- saved to list", inline=False)
+            embed.add_field(
+                name="Success!", value=f"{arg} -- saved to list", inline=False
+            )
             await ctx.send(embed=embed)
         else:
             if await check_format(mylist):
@@ -142,13 +151,18 @@ async def saveList(ctx, *, arg):
                     myeplist += ", " + episode
 
             cur.execute(
-                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""", (mylist, my_id)
+                """UPDATE watchlist SET animelist= %s WHERE user_id = %s""",
+                (mylist, my_id),
             )
             cur.execute(
                 """UPDATE watchlist SET ep= %s WHERE user_id = %s""", (myeplist, my_id)
             )
             conn.commit()
-            embed.add_field(name="Success!", value=f"{animename} -- saved to list with episode {episode}", inline=False)
+            embed.add_field(
+                name="Success!",
+                value=f"{animename} -- saved to list with episode {episode}",
+                inline=False,
+            )
             await ctx.send(embed=embed)
     else:
         await error_obj.no_list_error(ctx)
@@ -168,7 +182,9 @@ async def showList(ctx):
     myeplist = " ".join(map(str, epresult))
 
     embed = discord.Embed(
-        title="Anime list", description="My saved animes with episodes: ", color=0x14EBC0
+        title="Anime list",
+        description="My saved animes with episodes: ",
+        color=0x14EBC0,
     )
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
 
@@ -193,7 +209,7 @@ async def showList(ctx):
                     break
                 counter1 += 1
             counter += 1
-        
+
         await ctx.send(embed=embed)
 
 
@@ -449,43 +465,50 @@ async def deleteList(ctx):
 @bot.command(name="help", aliases=["Help"], pass_context=True)
 async def help(ctx, *, arg=None):
     if (
-        arg == "createList" or arg == "createlist" or arg == "Createlist" or arg == "CreateList" 
+        arg == "createList"
+        or arg == "createlist"
+        or arg == "Createlist"
+        or arg == "CreateList"
     ):
         await embed_help.embedCreateList(ctx)
         return
 
     elif (
         arg == "saveList" or arg == "savelist" or arg == "Savelist" or arg == "SaveList"
-    ):        
+    ):
         await embed_help.embedSaveList(ctx)
         return
 
     elif (
         arg == "showList" or arg == "showlist" or arg == "Showlist" or arg == "ShowList"
-    ):      
+    ):
         await embed_help.embedShowList(ctx)
         return
 
     elif (
         arg == "delAnime" or arg == "delanime" or arg == "Delanime" or arg == "DelAnime"
-    ):     
+    ):
         await embed_help.embedDelAnime(ctx)
         return
 
     elif (
-        arg == "deleteList" or arg == "deletelist" or arg == "Deletelist" or arg == "DeleteList"
-    ):      
+        arg == "deleteList"
+        or arg == "deletelist"
+        or arg == "Deletelist"
+        or arg == "DeleteList"
+    ):
         await embed_help.embedDeleteList(ctx)
         return
 
     elif arg == "poll" or arg == "Poll":
-        
+
         await embed_help.embedPoll(ctx)
         return
 
     else:
         await embed_help.embedOverall(ctx)
         return
+
 
 @bot.command(name="poll", aliases=["Poll"], pass_context=True)
 async def poll(ctx, choice1, choice2, *, question):
@@ -540,7 +563,7 @@ async def animeMeme(ctx):
 @bot.command(name="setEp", aliases=["setep"], pass_context=True)
 async def setEp(ctx, *, arg):
     endspace = arg.rfind(" ")
-    episode = arg[endspace + 1:]
+    episode = arg[endspace + 1 :]
     animename = arg[0:endspace]
 
     my_id = str(ctx.message.author.id)
@@ -564,7 +587,7 @@ async def setEp(ctx, *, arg):
         await error_obj.missing_anime_error(ctx)
 
     else:
-    
+
         myeplist = myeplist[2:-3]
         counter = 0
         for anime in mylist.split(","):
@@ -754,6 +777,7 @@ async def on_command_error(ctx, error):
     await ctx.send(embed=e_embed)
     e_embed.clear_fields()
 
+
 # API Commands
 @bot.command(
     name="animeSearch",
@@ -766,17 +790,17 @@ async def animeSearch(ctx, *, arg):
         mal_id = image.results[0].mal_id
         anime = mal.Anime(mal_id)
         otherTitle = str(anime.title_synonyms)[1:-1]
-        otherTitle = otherTitle.replace('\'', '')
+        otherTitle = otherTitle.replace("'", "")
         licensors = str(anime.licensors)[1:-1]
-        licensors = licensors.replace('\'', '')
+        licensors = licensors.replace("'", "")
         studios = str(anime.studios)[1:-1]
-        studios = studios.replace('\'', '')
+        studios = studios.replace("'", "")
         genres = str(anime.genres)[1:-1]
-        genres = genres.replace('\'', '')
+        genres = genres.replace("'", "")
         themes = str(anime.themes)[1:-1]
-        themes = themes.replace('\'', '')
+        themes = themes.replace("'", "")
         producers = str(anime.producers)[1:-1]
-        producers = producers.replace('\'', '')
+        producers = producers.replace("'", "")
         synopsis = anime.synopsis[:1015]
         background = anime.background
         background = background.split("More Videos")
@@ -805,35 +829,47 @@ async def animeSearch(ctx, *, arg):
             url=anime.url,
             color=0xF2D026,
         )
-        embed.add_field(name="***Titles***",
-                        value=f"**🇺🇸English title: ** {anime.title_english}\n"
-                              f"**🇯🇵Japanese title: ** {anime.title_japanese}\n"
-                              f"**➤Synonyms: ** {otherTitle}", inline=True)
-        embed.add_field(name="***Statistics***",
-                        value=f"**💯Score: ** `{anime.score}`\n"
-                              f"**✌️Scored by: ** `{anime.scored_by}` users\n"
-                              f"**♚Ranked: ** `{anime.rank}`\n"
-                              f"**✨Popularity: ** `{anime.popularity}`\n"
-                              f"**🕴️Members: ** `{anime.members}`\n"
-                              f"**💖Favorites: ** `{anime.favorites}`\t", inline=True)
-        embed.add_field(name="***Information***",
-                        value=f"**🎥 Type: ** {anime.type}\t\t"
-                              f"**🎬 Episodes: ** `{anime.episodes}`\t\t"
-                              f"**💨Status: ** {anime.status}\n"
-                              f"**➤Aired: ** {anime.aired}\n"
-                              f"**📺Premiered: ** {anime.premiered}\n"
-                              f"**📡Broadcast: ** {anime.broadcast}\n"
-                              f"**➤Producers: ** {producers}\n"
-                              f"**👜Licensors: ** {licensors}\n"
-                              f"**➤Studios: ** {studios}\n"
-                              f"**➤Source: ** {anime.source}\t\t"
-                              f"**➤Genres: ** {genres}\t\t"
-                              f"**🕧Duration: ** {anime.duration}\n"
-                              f"**➤Themes: ** {themes}\n"
-                              f"**➤Rating: ** {anime.rating}\t", inline=False)
+        embed.add_field(
+            name="***Titles***",
+            value=f"**🇺🇸English title: ** {anime.title_english}\n"
+            f"**🇯🇵Japanese title: ** {anime.title_japanese}\n"
+            f"**➤Synonyms: ** {otherTitle}",
+            inline=True,
+        )
+        embed.add_field(
+            name="***Statistics***",
+            value=f"**💯Score: ** `{anime.score}`\n"
+            f"**✌️Scored by: ** `{anime.scored_by}` users\n"
+            f"**♚Ranked: ** `{anime.rank}`\n"
+            f"**✨Popularity: ** `{anime.popularity}`\n"
+            f"**🕴️Members: ** `{anime.members}`\n"
+            f"**💖Favorites: ** `{anime.favorites}`\t",
+            inline=True,
+        )
+        embed.add_field(
+            name="***Information***",
+            value=f"**🎥 Type: ** {anime.type}\t\t"
+            f"**🎬 Episodes: ** `{anime.episodes}`\t\t"
+            f"**💨Status: ** {anime.status}\n"
+            f"**➤Aired: ** {anime.aired}\n"
+            f"**📺Premiered: ** {anime.premiered}\n"
+            f"**📡Broadcast: ** {anime.broadcast}\n"
+            f"**➤Producers: ** {producers}\n"
+            f"**👜Licensors: ** {licensors}\n"
+            f"**➤Studios: ** {studios}\n"
+            f"**➤Source: ** {anime.source}\t\t"
+            f"**➤Genres: ** {genres}\t\t"
+            f"**🕧Duration: ** {anime.duration}\n"
+            f"**➤Themes: ** {themes}\n"
+            f"**➤Rating: ** {anime.rating}\t",
+            inline=False,
+        )
         embed.add_field(name="Synopsis", value=f"```{synopsis}...```", inline=False)
-        embed.add_field(name="***Characters & Voice Actors***",
-                        value="List of major characters and their voice actors:", inline=False)
+        embed.add_field(
+            name="***Characters & Voice Actors***",
+            value="List of major characters and their voice actors:",
+            inline=False,
+        )
         embed.add_field(name="⭐Name⭐", value=f"**{nameList}**", inline=True)
         embed.add_field(name="🗣Role🗣", value=roleList, inline=True)
         embed.add_field(name="🕺Voice Actors💃", value=f"_{voiceActorList}_", inline=True)
@@ -919,7 +955,7 @@ async def on_command_error(ctx, error):
         e_embed.add_field(
             name="Command not found!",
             value="Use `!help` for list of commands\n"
-                  + "Use `!help <command name>` for specific command details",
+            + "Use `!help <command name>` for specific command details",
         )
     else:
         raise error
@@ -972,7 +1008,7 @@ async def mangaSearch(ctx, *, arg):
         title="Manga Search Result",
         url=image.results[0].url,
         description=image.results[0].title,
-        color=0x5d7faf,
+        color=0x5D7FAF,
     )
     embed.add_field(name="Japanese title", value=f"{japanese}", inline=False)
     embed.add_field(name="Synopsis", value=image.results[0].synopsis, inline=False)
@@ -985,6 +1021,262 @@ async def mangaSearch(ctx, *, arg):
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
     embed.set_thumbnail(url=image.results[0].image_url)
     await ctx.send(embed=embed)
+
+
+## start of song.py
+## ================================================================
+
+youtube_dl.utils.bug_reports_message = lambda: ""
+
+ytdl_format_options = {
+    "format": "bestaudio/best",
+    "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
+    "restrictfilenames": True,
+    "noplaylist": True,
+    "nocheckcertificate": True,
+    "ignoreerrors": False,
+    "logtostderr": False,
+    "quiet": True,
+    "no_warnings": True,
+    "default_search": "auto",
+    "source_address": "0.0.0.0",
+}
+
+ffmpeg_options = {"options": "-vn"}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+
+        self.data = data
+
+        self.title = data.get("title")
+        self.url = data.get("url")
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, lambda: ytdl.extract_info(url, download=not stream)
+        )
+
+        if "entries" in data:
+            # take first item from a playlist
+            data = data["entries"][0]
+
+        filename = data["url"] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
+
+def is_connected(ctx):
+    voice_client = ctx.message.guild.voice_client
+    return voice_client and voice_client.is_connected()
+
+
+status = ["music"]
+queue = []
+loop = False
+
+
+@bot.command(name="stop", aliases=["Stop"])
+async def stop(ctx):
+    voice_client = ctx.message.guild.voice_client
+    await voice_client.disconnect()
+
+
+@bot.command(name="loop", aliases=["Loop"])
+async def loop_(ctx):
+    global loop
+
+    if loop:
+        await ctx.send("Loop mode is now `False!`")
+        loop = False
+
+    else:
+        await ctx.send("Loop mode is now `True!`")
+        loop = True
+
+
+@bot.command(name="play", aliases=["Play"])
+async def play(ctx):
+    global queue
+
+    if not ctx.message.author.voice:
+        await ctx.send("You are not connected to a voice channel")
+        return
+
+    elif len(queue) == 0:
+        await ctx.send("Nothing in your queue! Use `!queue` to add a song!")
+
+    else:
+        try:
+            channel = ctx.message.author.voice.channel
+            await channel.connect()
+        except:
+            pass
+
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+    while queue:
+        try:
+            while voice_channel.is_playing() or voice_channel.is_paused():
+                await asyncio.sleep(2)
+                pass
+
+        except AttributeError:
+            pass
+
+        try:
+            async with ctx.typing():
+                player = await YTDLSource.from_url(queue[0], loop=bot.loop)
+                voice_channel.play(
+                    player, after=lambda e: print("Player error: %s" % e) if e else None
+                )
+
+                if loop:
+                    queue.append(queue[0])
+
+                del queue[0]
+
+            await ctx.send("**Now playing:** {}".format(player.title))
+
+        except:
+            break
+
+
+@bot.command(name="volume", aliases=["Volume"])
+async def volume(ctx, volume: int):
+    if ctx.voice_client is None:
+        return await ctx.send("Not connected to a voice channel.")
+
+    ctx.voice_client.source.volume = volume / 100
+    await ctx.send(f"Changed volume to {volume}%")
+
+
+@bot.command(name="pause", aliases=["Pause"])
+async def pause(ctx):
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+
+    voice_channel.pause()
+
+
+@bot.command(name="resume", aliases=["Resume"])
+async def resume(ctx):
+    server = ctx.message.guild
+    voice_channel = server.voice_client
+
+    voice_channel.resume()
+
+
+@bot.command(name="queue", aliases=["Queue", "add", "Add"], pass_context=True)
+async def queue_(ctx, *, url):
+    global queue
+
+    queue.append(url)
+    await ctx.send(f"`{url}` added to queue!")
+
+
+@bot.command(name="remove", aliases=["Remove"], pass_context=True)
+async def remove(ctx, number):
+    global queue
+
+    try:
+        del queue[int(number)]
+        await ctx.send(f"Your queue is now `{queue}!`")
+
+    except:
+        await ctx.send(
+            "Your queue is either **empty** or the index is **out of range**"
+        )
+
+
+@bot.command(name="view", aliases=["View"], pass_context=True)
+async def view(ctx):
+    await ctx.send(f"Your queue is now `{queue}!`")
+
+
+@bot.command(name="skip", aliases=["Skip"], pass_context=True)
+async def skip(ctx):
+    if ctx.voice_client is None:
+        return await ctx.send("I am not playing any song.")
+
+    if ctx.author.voice is None:
+        return await ctx.send("You are not connected to any voice channel.")
+
+    if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+        return await ctx.send("I am not currently playing any songs for you.")
+
+    poll = discord.Embed(
+        title=f"Vote to Skip Song by - {ctx.author.name}#{ctx.author.discriminator}",
+        description="**80% of the voice channel must vote to skip for it to pass.**",
+        colour=discord.Colour.blue(),
+    )
+    poll.add_field(name="Skip", value=":white_check_mark:")
+    poll.add_field(name="Stay", value=":no_entry_sign:")
+    poll.set_footer(text="Voting ends in 15 seconds.")
+
+    poll_msg = await ctx.send(embed=poll)
+    poll_id = poll_msg.id
+
+    await poll_msg.add_reaction("\u2705")  # yes
+    await poll_msg.add_reaction("\U0001F6AB")  # no
+
+    await asyncio.sleep(15)  # 15 seconds to vote
+
+    poll_msg = await ctx.channel.fetch_message(poll_id)
+
+    votes = {"\u2705": 0, "\U0001F6AB": 0}
+    reacted = []
+
+    for reaction in poll_msg.reactions:
+        if reaction.emoji in ["\u2705", "\U0001F6AB"]:
+            async for user in reaction.users():
+                if (
+                    # user.voice.channel.id == ctx.voice_client.channel.id
+                    user.id not in reacted
+                    and not user.bot
+                ):
+                    votes[reaction.emoji] += 1
+
+                    reacted.append(user.id)
+
+    skip = False
+
+    if votes["\u2705"] > 0:
+        if (
+            votes["\U0001F6AB"] == 0
+            or votes["\u2705"] / (votes["\u2705"] + votes["\U0001F6AB"]) > 0.79
+        ):  # 80% or higher
+            skip = True
+            embed = discord.Embed(
+                title="Skip Successful",
+                description="***Voting to skip the current song was succesful, skipping now.***",
+                colour=discord.Colour.green(),
+            )
+
+    if not skip:
+        embed = discord.Embed(
+            title="Skip Failed",
+            description="*Voting to skip the current song has failed.*\n\n**Voting failed, the vote requires at least 80% of the members to skip.**",
+            colour=discord.Colour.red(),
+        )
+
+    embed.set_footer(text="Voting has ended.")
+
+    await poll_msg.clear_reactions()
+    await poll_msg.edit(embed=embed)
+
+    if skip:
+        ctx.voice_client.stop()
+
+
+@tasks.loop(seconds=20)
+async def change_status():
+    await bot.change_presence(activity=discord.Game(choice(status)))
 
 
 bot.run("OTQyMjgwNzE5NjU1Mzk1MzY5.YgiNTg.e1knou32SWUBoL7iY4p6PcKHETQ")
